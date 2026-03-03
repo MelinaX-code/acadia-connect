@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StudentConnect | Home</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="page-home">
+
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="home.html">Home</a>
+      <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a href="admin-dashboard.html" id="adminLink" style="display:none;">🔧 Admin</a>
+      <a href="index.html" class="btnLogin-popup" id="loginBtn">Login</a>
+    </nav>
+  </header>
+  
+  <main class="landing">
+    <div class="landing-box">
+      <h1>Welcome to AcadiaConnect</h1>
+      <p>
+        AcadiaConnect is a student-focused platform designed to support students at
+         Acadia University by helping them feel more connected and supported
+       
+        
+      </p>
+      <p>
+         Whether you are new to campus or simply looking to meet others, StudentConnect
+            makes it easy to discover small meetups, connect with peers, and access
+            helpful campus resources all in one place.
+       
+      </p>
+
+      <div class="landing-actions">
+        <a href="index.html" class="landing-btn">Login</a>
+        <a href="index.html" class="landing-link">Create an account</a>
+      </div>
+    </div>
+  </main>
+  <script src="api.js"></script>
+  <script>
+    // Show/hide profile link based on login status
+    window.addEventListener('load', () => {
+      const profileLink = document.getElementById('profileLink');
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
+      const adminLink = document.getElementById('adminLink');
+      const loginBtn = document.getElementById('loginBtn');
+      
+      if (isUserLoggedIn()) {
+        profileLink.style.display = 'block';
+        suggestionsLink.style.display = 'block';
+        messagesLink.style.display = 'block';
+        loginBtn.style.display = 'none';
+        
+        // Check if user is admin
+        const user = JSON.parse(localStorage.getItem('user'));
+        if (user && user.isAdmin) {
+          adminLink.style.display = 'block';
+        }
+      } else {
+        profileLink.style.display = 'none';
+        suggestionsLink.style.display = 'none';
+        messagesLink.style.display = 'none';
+        adminLink.style.display = 'none';
+        loginBtn.style.display = 'inline-block';
+      }
+    });
+  </script>
+
+</body>
+</html>

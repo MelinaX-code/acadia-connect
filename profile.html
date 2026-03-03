@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Profile | Acadia Connect</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .profile-container {
+      max-width: 700px;
+      margin: 140px auto 60px;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 50px;
+      border-radius: 16px;
+      color: #333;
+      box-shadow: 0 12px 40px rgba(102, 126, 234, 0.2);
+    }
+
+    .profile-container h1 {
+      text-align: center;
+      margin-bottom: 40px;
+      color: #667eea;
+      font-size: 2em;
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .profile-section {
+      margin-bottom: 35px;
+      padding-bottom: 25px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .profile-section:last-child {
+      border-bottom: none;
+    }
+
+    .profile-section h2 {
+      font-size: 1.2em;
+      margin-bottom: 18px;
+      color: #667eea;
+      font-weight: 700;
+    }
+
+    .profile-info {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 22px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .info-label {
+      font-weight: 600;
+      margin-bottom: 7px;
+      color: #888;
+      font-size: 0.85em;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .info-value {
+      padding: 12px;
+      background: linear-gradient(135deg, #f8f8ff 0%, #f5f5ff 100%);
+      border-radius: 6px;
+      color: #333;
+      border: 1px solid #e8e0ff;
+    }
+
+    .profile-photo {
+      text-align: center;
+      margin: 25px 0;
+      padding: 20px;
+      background: linear-gradient(135deg, #f8f8ff 0%, #f5f5ff 100%);
+      border-radius: 12px;
+      border: 2px dashed #d0c7ff;
+    }
+
+    .photo-preview {
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 4px solid #667eea;
+      margin: 15px auto;
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.25);
+    }
+
+    .photo-upload {
+      margin: 18px 0;
+    }
+
+    .photo-upload input[type="file"] {
+      display: none;
+    }
+
+    .photo-upload label {
+      display: inline-block;
+      padding: 10px 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.95em;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    .photo-upload label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+    }
+
+    .form-group {
+      margin-bottom: 22px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 0.95em;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.95em;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .edit-toggle {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 30px;
+    }
+
+    .btn-edit,
+    .btn-save,
+    .btn-cancel,
+    .btn-logout {
+      padding: 12px 28px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.95em;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-edit {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-edit:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-cancel {
+      background: #bfdbfe;
+      color: #1e40af;
+      font-weight: 600;
+      box-shadow: 0 2px 8px rgba(30, 64, 175, 0.1);
+    }
+
+    .btn-cancel:hover {
+      background: #a5d8ff;
+      transform: translateY(-2px);
+    }
+
+    .btn-logout {
+      background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(249, 115, 22, 0.25);
+    }
+
+    .btn-logout:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(249, 115, 22, 0.35);
+    }
+
+    .edit-form {
+      display: none;
+    }
+
+    .edit-form.show {
+      display: block;
+    }
+
+    .profile-view {
+      display: block;
+    }
+
+    .profile-view.hide {
+      display: none;
+    }
+
+    .languages-input {
+      font-size: 0.9em;
+      color: #666;
+    }
+
+    @media (max-width: 600px) {
+      .profile-info {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-container {
+        margin: 120px 20px 60px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body class="page-home">
+
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="home.html">Home</a>
+      <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html">Suggestions</a>
+      <a href="messages.html">Messages</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html">My Profile</a>
+      <a href="#" id="logoutBtn">Logout</a>
+    </nav>
+  </header>
+
+  <main class="profile-container">
+    <h1>My Profile</h1>
+
+    <!-- Profile View Mode -->
+    <div class="profile-view" id="profileView">
+      <div class="profile-section">
+        <div class="profile-photo">
+          <img id="photoPreviewView" class="photo-preview" src="https://via.placeholder.com/150" alt="Profile Photo">
+        </div>
+        <div class="profile-info">
+          <div class="info-item">
+            <span class="info-label">Full Name</span>
+            <span class="info-value" id="fullNameView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value" id="emailView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Role</span>
+            <span class="info-value" id="roleView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Year</span>
+            <span class="info-value" id="yearView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Major/Program</span>
+            <span class="info-value" id="majorView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Country</span>
+            <span class="info-value" id="countryView">-</span>
+          </div>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Languages Spoken</span>
+          <span class="info-value" id="languagesView">-</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Bio</span>
+          <span class="info-value" id="bioView">-</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Hobbies</span>
+          <span class="info-value" id="hobbiesView">-</span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">Interests</span>
+          <span class="info-value" id="interestsView">-</span>
+        </div>
+      </div>
+
+      <div class="edit-toggle">
+        <button class="btn-edit" onclick="enableEditMode()">Edit Profile</button>
+        <button class="btn-logout" id="logoutBtn2">Logout</button>
+      </div>
+    </div>
+
+    <!-- Profile Edit Mode -->
+    <form class="edit-form" id="editForm" onsubmit="saveProfile(event)">
+      <div class="profile-section">
+        <h2>Edit Your Profile</h2>
+
+        <div class="profile-photo">
+          <img id="photoPreviewEdit" class="photo-preview" src="https://via.placeholder.com/150" alt="Profile Photo">
+          <div class="photo-upload">
+            <label for="photoInput">Upload Photo:</label>
+            <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()">
+            <small class="languages-input">JPG, PNG (recommended: 150x150px)</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="fullName">Full Name *</label>
+          <input type="text" id="fullName" required readonly style="background: #f0f0f0;">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email *</label>
+          <input type="email" id="email" required readonly style="background: #f0f0f0;">
+        </div>
+
+        <div class="form-group">
+          <label for="role">Role *</label>
+          <select id="role" required disabled style="background: #f0f0f0;">
+            <option value="">Select</option>
+            <option value="international">International Student</option>
+            <option value="local">Local Student</option>
+          </select>
+        </div>
+
+        <div class="profile-info">
+          <div class="form-group">
+            <label for="year">Year of Study</label>
+            <select id="year">
+              <option value="">Select</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+              <option value="Graduate">Graduate</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="major">Major/Program</label>
+            <input type="text" id="major" placeholder="e.g., Computer Science">
+          </div>
+
+          <div class="form-group">
+            <label for="country">Country</label>
+            <input type="text" id="country" placeholder="e.g., Canada">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="languages">Languages Spoken (comma-separated)</label>
+          <input type="text" id="languages" placeholder="e.g., English, Spanish, French">
+          <small class="languages-input">Separate multiple languages with commas</small>
+        </div>
+
+        <div class="form-group">
+          <label for="bio">Bio</label>
+          <textarea id="bio" placeholder="Tell others about yourself..."></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="hobbies">Hobbies (comma-separated)</label>
+          <input type="text" id="hobbies" placeholder="e.g., gaming, reading, sports">
+          <small class="languages-input">Separate multiple hobbies with commas</small>
+        </div>
+
+        <div class="form-group">
+          <label for="interests">Interests (comma-separated)</label>
+          <input type="text" id="interests" placeholder="e.g., web development, AI, music">
+          <small class="languages-input">Separate multiple interests with commas</small>
+        </div>
+      </div>
+
+      <div class="edit-toggle">
+        <button type="submit" class="btn-save">Save Changes</button>
+        <button type="button" class="btn-cancel" onclick="disableEditMode()">Cancel</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+    // Check if user is logged in
+    window.addEventListener('load', async () => {
+      if (!isUserLoggedIn()) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      // Load user profile
+      await loadProfile();
+    });
+
+    async function loadProfile() {
+      try {
+        const user = JSON.parse(localStorage.getItem('user'));
+        const profile = await getUserProfile();
+
+        // Populate view mode
+        document.getElementById('fullNameView').textContent = profile.fullName || '-';
+        document.getElementById('emailView').textContent = profile.email || '-';
+        document.getElementById('roleView').textContent = profile.role === 'international' ? 'International Student' : 'Local Student' || '-';
+        document.getElementById('yearView').textContent = profile.profile?.year || '-';
+        document.getElementById('majorView').textContent = profile.profile?.major || '-';
+        document.getElementById('countryView').textContent = profile.profile?.country || '-';
+        document.getElementById('languagesView').textContent = profile.profile?.languages?.join(', ') || '-';
+        document.getElementById('bioView').textContent = profile.profile?.bio || 'No bio added yet.';
+        document.getElementById('hobbiesView').textContent = profile.profile?.hobbies?.join(', ') || '-';
+        document.getElementById('interestsView').textContent = profile.profile?.interests?.join(', ') || '-';
+
+        // Display photo if exists
+        if (profile.profile?.photo) {
+          document.getElementById('photoPreviewView').src = profile.profile.photo;
+          document.getElementById('photoPreviewEdit').src = profile.profile.photo;
+        }
+
+        // Populate edit mode
+        document.getElementById('fullName').value = profile.fullName || '';
+        document.getElementById('email').value = profile.email || '';
+        document.getElementById('role').value = profile.role || '';
+        document.getElementById('year').value = profile.profile?.year || '';
+        document.getElementById('major').value = profile.profile?.major || '';
+        document.getElementById('country').value = profile.profile?.country || '';
+        document.getElementById('languages').value = profile.profile?.languages?.join(', ') || '';
+        document.getElementById('bio').value = profile.profile?.bio || '';
+        document.getElementById('hobbies').value = profile.profile?.hobbies?.join(', ') || '';
+        document.getElementById('interests').value = profile.profile?.interests?.join(', ') || '';
+      } catch (error) {
+        console.error('Error loading profile:', error);
+        alert('Failed to load profile');
+      }
+    }
+
+    function enableEditMode() {
+      document.getElementById('profileView').classList.add('hide');
+      document.getElementById('editForm').classList.add('show');
+    }
+
+    function disableEditMode() {
+      document.getElementById('profileView').classList.remove('hide');
+      document.getElementById('editForm').classList.remove('show');
+    }
+
+    function previewPhoto() {
+      const fileInput = document.getElementById('photoInput');
+      const file = fileInput.files[0];
+
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          document.getElementById('photoPreviewEdit').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function saveProfile(event) {
+      event.preventDefault();
+
+      try {
+        const languages = document.getElementById('languages').value
+          .split(',')
+          .map(l => l.trim())
+          .filter(l => l);
+        const hobbies = document.getElementById('hobbies').value
+          .split(',')
+          .map(h => h.trim())
+          .filter(h => h);
+        const interests = document.getElementById('interests').value
+          .split(',')
+          .map(i => i.trim())
+          .filter(i => i);
+
+        const photoData = document.getElementById('photoPreviewEdit').src;
+
+        const profileData = {
+          bio: document.getElementById('bio').value,
+          hobbies,
+          interests,
+          major: document.getElementById('major').value,
+          year: document.getElementById('year').value,
+          country: document.getElementById('country').value,
+          languages,
+          photo: photoData !== 'https://via.placeholder.com/150' ? photoData : undefined,
+        };
+
+        const result = await updateProfile(profileData);
+        alert('Profile updated successfully!');
+
+        // Reload profile
+        await loadProfile();
+        disableEditMode();
+      } catch (error) {
+        console.error('Error saving profile:', error);
+        alert('Failed to save profile: ' + error.message);
+      }
+    }
+
+    // Logout functionality
+    document.getElementById('logoutBtn').addEventListener('click', (e) => {
+      e.preventDefault();
+      logoutUser();
+      window.location.href = 'index.html';
+    });
+
+    document.getElementById('logoutBtn2').addEventListener('click', (e) => {
+      e.preventDefault();
+      logoutUser();
+      window.location.href = 'index.html';
+    });
+  </script>
+</body>
+
+</html>

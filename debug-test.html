@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Debug Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .test-section {
+      margin: 30px 0;
+      padding: 20px;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+      background: #162938;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+    button:hover {
+      background: #0d1a24;
+    }
+    .output {
+      margin-top: 15px;
+      padding: 15px;
+      background: #f5f5f5;
+      border-radius: 4px;
+      white-space: pre-wrap;
+      font-family: monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .success {
+      border-left: 4px solid green;
+    }
+    .error {
+      border-left: 4px solid red;
+    }
+    input {
+      padding: 8px;
+      margin: 5px;
+      width: 200px;
+    }
+  </style>
+</head>
+<body>
+  <h1>API Debug Test Page</h1>
+  
+  <div class="test-section">
+    <h2>1. Login Test</h2>
+    <p>Try logging in with your credentials:</p>
+    <input type="email" id="loginEmail" placeholder="Email" value="test@test.com">
+    <input type="password" id="loginPassword" placeholder="Password" value="test123">
+    <button onclick="testLogin()">Login</button>
+    <button onclick="testRegister()">Register New User</button>
+    <div id="loginOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. Token Check</h2>
+    <button onclick="checkToken()">Check Current Token</button>
+    <button onclick="clearToken()">Clear Token</button>
+    <div id="tokenOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. Suggestions API Test</h2>
+    <button onclick="testSuggestions()">Test Suggestions Endpoint</button>
+    <div id="suggestionsOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. Messages API Test</h2>
+    <button onclick="testMessages()">Test Messages Endpoint</button>
+    <div id="messagesOutput" class="output"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>5. Profile Test</h2>
+    <button onclick="testProfile()">Test Profile Endpoint</button>
+    <div id="profileOutput" class="output"></div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    const API_URL = 'http://localhost:3001/api';
+
+    function log(elementId, message, type = 'info') {
+      const output = document.getElementById(elementId);
+      output.className = 'output ' + (type === 'error' ? 'error' : 'success');
+      output.textContent = typeof message === 'object' ? JSON.stringify(message, null, 2) : message;
+    }
+
+    async function testLogin() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      try {
+        const response = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem('token', data.token);
+          log('loginOutput', `✅ Login successful!\n\nToken: ${data.token.substring(0, 50)}...\n\nUser: ${JSON.stringify(data.user, null, 2)}`, 'success');
+        } else {
+          log('loginOutput', `❌ Login failed: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        log('loginOutput', `❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function testRegister() {
+      const email = document.getElementById('loginEmail').value;
+      const password = document.getElementById('loginPassword').value;
+      
+      try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            fullName: 'Test User',
+            email, 
+            password,
+            role: 'international'
+          })
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          localStorage.setItem('token', data.token);
+          log('loginOutput', `✅ Registration successful!\n\nToken: ${data.token.substring(0, 50)}...\n\nUser: ${JSON.stringify(data.user, null, 2)}`, 'success');
+        } else {
+          log('loginOutput', `❌ Registration failed: ${data.error}`, 'error');
+        }
+      } catch (error) {
+        log('loginOutput', `❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    function checkToken() {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]));
+          log('tokenOutput', `✅ Token found!\n\nPayload: ${JSON.stringify(payload, null, 2)}\n\nFull token: ${token}`, 'success');
+        } catch (error) {
+          log('tokenOutput', `⚠️ Token exists but is invalid: ${error.message}`, 'error');
+        }
+      } else {
+        log('tokenOutput', '❌ No token found. Please login first.', 'error');
+      }
+    }
+
+    function clearToken() {
+      localStorage.removeItem('token');
+      log('tokenOutput', '✅ Token cleared', 'success');
+    }
+
+    async function testSuggestions() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        log('suggestionsOutput', '❌ No token found. Please login first.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/profile/suggestions/connections`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          log('suggestionsOutput', `✅ Suggestions loaded!\n\nFound ${data.suggestions?.length || 0} suggestions:\n\n${JSON.stringify(data, null, 2)}`, 'success');
+        } else {
+          log('suggestionsOutput', `❌ Failed: ${data.error}\n\nStatus: ${response.status}`, 'error');
+        }
+      } catch (error) {
+        log('suggestionsOutput', `❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function testMessages() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        log('messagesOutput', '❌ No token found. Please login first.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/messages/conversations`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          log('messagesOutput', `✅ Messages loaded!\n\nFound ${data.conversations?.length || 0} conversations:\n\n${JSON.stringify(data, null, 2)}`, 'success');
+        } else {
+          log('messagesOutput', `❌ Failed: ${data.error}\n\nStatus: ${response.status}`, 'error');
+        }
+      } catch (error) {
+        log('messagesOutput', `❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    async function testProfile() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        log('profileOutput', '❌ No token found. Please login first.', 'error');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_URL}/profile/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        const data = await response.json();
+        
+        if (response.ok) {
+          log('profileOutput', `✅ Profile loaded!\n\n${JSON.stringify(data, null, 2)}`, 'success');
+        } else {
+          log('profileOutput', `❌ Failed: ${data.error}\n\nStatus: ${response.status}`, 'error');
+        }
+      } catch (error) {
+        log('profileOutput', `❌ Error: ${error.message}`, 'error');
+      }
+    }
+
+    // Auto-check token on load
+    window.addEventListener('load', () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        log('tokenOutput', `ℹ️ Token detected in localStorage. Click "Check Current Token" to view details.`, 'success');
+      }
+    });
+  </script>
+</body>
+</html>

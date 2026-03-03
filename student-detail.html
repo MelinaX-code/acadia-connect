@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Student Profile | Acadia Connect</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .student-detail-container {
+      max-width: 800px;
+      margin: 140px auto 60px;
+      background: rgba(255, 255, 255, 0.97);
+      padding: 50px;
+      border-radius: 16px;
+      color: #162938;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    }
+
+    .back-btn {
+      display: inline-block;
+      margin-bottom: 25px;
+      padding: 12px 24px;
+      background: linear-gradient(135deg, #162938 0%, #1e3a4f 100%);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(22, 41, 56, 0.2);
+    }
+
+    .back-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(22, 41, 56, 0.3);
+    }
+
+    .student-header {
+      display: flex;
+      gap: 35px;
+      margin-bottom: 45px;
+      align-items: flex-start;
+    }
+
+    .student-photo-large {
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid #162938;
+      flex-shrink: 0;
+      box-shadow: 0 6px 20px rgba(22, 41, 56, 0.25);
+    }
+
+    .student-basic-info h1 {
+      font-size: 2.2em;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+
+    .student-role-badge {
+      display: inline-block;
+      padding: 8px 18px;
+      background: #f0f0f0;
+      color: #162938;
+      border-radius: 20px;
+      margin-bottom: 18px;
+      font-weight: 600;
+      font-size: 0.92em;
+      border: 2px solid #e0e0e0;
+    }
+
+    .basic-info-item {
+      margin: 12px 0;
+      font-size: 1em;
+      color: #444;
+    }
+
+    .basic-info-item strong {
+      color: #162938;
+      min-width: 100px;
+      font-weight: 600;
+    }
+
+    .section {
+      margin-top: 42px;
+      padding-top: 32px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .section h2 {
+      font-size: 1.3em;
+      color: #162938;
+      margin-bottom: 18px;
+      font-weight: 700;
+    }
+
+    .bio-text {
+      font-size: 1em;
+      line-height: 1.7;
+      color: #444;
+      background: #f8f8f8;
+      padding: 18px;
+      border-radius: 8px;
+      border-left: 4px solid #162938;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 16px;
+    }
+
+    .tag {
+      display: inline-block;
+      background: #f0f0f0;
+      color: #162938;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.92em;
+      border: 1px solid #e0e0e0;
+      font-weight: 500;
+    }
+
+    .no-info {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    .contact-section {
+      background: linear-gradient(135deg, rgba(22, 41, 56, 0.08) 0%, rgba(22, 41, 56, 0.05) 100%);
+      padding: 25px;
+      border-radius: 8px;
+      margin-top: 35px;
+      text-align: center;
+      border: 1px solid rgba(22, 41, 56, 0.1);
+    }
+
+    .contact-section h3 {
+      color: #162938;
+      margin-bottom: 18px;
+      font-weight: 600;
+    }
+
+    .contact-btn {
+      padding: 12px 32px;
+      background: linear-gradient(135deg, #162938 0%, #1e3a4f 100%);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.95em;
+      transition: all 0.3s;
+      box-shadow: 0 4px 12px rgba(22, 41, 56, 0.2);
+    }
+
+    .contact-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(22, 41, 56, 0.3);
+    }
+
+    .loading {
+      text-align: center;
+      color: #162938;
+      font-size: 1.2em;
+      padding: 40px;
+    }
+
+    .error {
+      text-align: center;
+      color: #dc3545;
+      font-size: 1.2em;
+      padding: 40px;
+    }
+
+    @media (max-width: 600px) {
+      .student-header {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .student-detail-container {
+        margin: 120px 20px 60px;
+        padding: 20px;
+      }
+
+      .student-basic-info h1 {
+        font-size: 1.8em;
+      }
+    }
+  </style>
+</head>
+
+<body class="page-home">
+
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="home.html">Home</a>
+      <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html">Suggestions</a>
+      <a href="messages.html">Messages</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a href="#" id="logoutBtn" style="display:none;">Logout</a>
+      <a href="index.html" class="btnLogin-popup" id="loginBtn">Login</a>
+    </nav>
+  </header>
+
+  <main class="student-detail-container">
+    <a href="browse-students.html" class="back-btn">← Back to Students</a>
+
+    <div id="studentDetail">
+      <div class="loading">Loading student profile...</div>
+    </div>
+  </main>
+
+  <script src="api.js"></script>
+  <script>
+    window.addEventListener('load', async () => {
+      // Update navigation
+      const profileLink = document.getElementById('profileLink');
+      const loginBtn = document.getElementById('loginBtn');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (isUserLoggedIn()) {
+        profileLink.style.display = 'block';
+        loginBtn.style.display = 'none';
+        logoutBtn.style.display = 'block';
+      }
+
+      logoutBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        logoutUser();
+        window.location.href = 'index.html';
+      });
+
+      // Get student ID from URL
+      const params = new URLSearchParams(window.location.search);
+      const studentId = params.get('id');
+
+      if (!studentId) {
+        document.getElementById('studentDetail').innerHTML = '<div class="error">Student not found</div>';
+        return;
+      }
+
+      await loadStudentDetail(studentId);
+    });
+
+    async function loadStudentDetail(studentId) {
+      try {
+        const response = await fetch(`http://localhost:3001/api/profile/${studentId}`);
+        if (!response.ok) throw new Error('Student not found');
+
+        const student = await response.json();
+
+        document.getElementById('studentDetail').innerHTML = `
+          <div class="student-header">
+            <img src="${student.profile?.photo || 'https://via.placeholder.com/200'}" alt="${student.fullName}" class="student-photo-large">
+            <div class="student-basic-info">
+              <h1>${student.fullName}</h1>
+              <span class="student-role-badge">
+                ${student.role === 'international' ? '🌍 International Student' : '📍 Local Student'}
+              </span>
+              <div class="basic-info-item">
+                <strong>Email:</strong> ${student.email}
+              </div>
+              ${student.profile?.year ? `<div class="basic-info-item"><strong>Year:</strong> ${student.profile.year}</div>` : ''}
+              ${student.profile?.major ? `<div class="basic-info-item"><strong>Major:</strong> ${student.profile.major}</div>` : ''}
+              ${student.profile?.country ? `<div class="basic-info-item"><strong>Country:</strong> ${student.profile.country}</div>` : ''}
+            </div>
+          </div>
+
+          ${student.profile?.bio ? `
+            <div class="section">
+              <h2>About</h2>
+              <div class="bio-text">${student.profile.bio}</div>
+            </div>
+          ` : ''}
+
+          ${student.profile?.languages?.length ? `
+            <div class="section">
+              <h2>Languages Spoken</h2>
+              <div class="tags-container">
+                ${student.profile.languages.map(lang => `<span class="tag">🗣️ ${lang}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${student.profile?.interests?.length ? `
+            <div class="section">
+              <h2>Interests</h2>
+              <div class="tags-container">
+                ${student.profile.interests.map(interest => `<span class="tag">⭐ ${interest}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          ${student.profile?.hobbies?.length ? `
+            <div class="section">
+              <h2>Hobbies</h2>
+              <div class="tags-container">
+                ${student.profile.hobbies.map(hobby => `<span class="tag">🎯 ${hobby}</span>`).join('')}
+              </div>
+            </div>
+          ` : ''}
+
+          <div class="contact-section">
+            <h3>Interested in connecting?</h3>
+            <p>Start a conversation and get to know each other!</p>
+            <button class="contact-btn" onclick="sendMessage('${student._id}')">Send Message</button>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Error loading student:', error);
+        document.getElementById('studentDetail').innerHTML = '<div class="error">Failed to load student profile</div>';
+      }
+    }
+
+    async function sendMessage(studentId) {
+      if (!isUserLoggedIn()) {
+        alert('Please login to send messages');
+        window.location.href = 'index.html';
+        return;
+      }
+
+      const message = prompt('Enter your message:');
+      if (!message || !message.trim()) return;
+
+      try {
+        const response = await fetchWithAuth('http://localhost:3001/api/messages/send', {
+          method: 'POST',
+          body: JSON.stringify({
+            receiverId: studentId,
+            content: message.trim()
+          })
+        });
+
+        if (response.ok) {
+          alert('Message sent successfully!');
+          window.location.href = 'messages.html';
+        } else {
+          alert('Failed to send message');
+        }
+      } catch (error) {
+        console.error('Send message error:', error);
+        alert('Failed to send message');
+      }
+    }
+  </script>
+</body>
+
+</html>

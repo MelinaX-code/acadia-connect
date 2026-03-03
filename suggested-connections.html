@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Suggested Connections | Acadia Connect</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .suggestions-container {
+      max-width: 1200px;
+      margin: 140px auto 60px;
+      padding: 20px;
+    }
+
+    .suggestions-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .suggestions-header h1 {
+      color: #fff;
+      font-size: 2.2em;
+      margin-bottom: 12px;
+      font-weight: 700;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .suggestions-header p {
+      color: rgba(255, 255, 255, 0.95);
+      font-size: 1.05em;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .suggestions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 25px;
+      margin-top: 30px;
+    }
+
+    .suggestion-card {
+      background: rgba(255, 255, 255, 0.98);
+      border-radius: 14px;
+      padding: 25px;
+      box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+      transition: all 0.3s;
+      cursor: pointer;
+      border: 1px solid rgba(102, 126, 234, 0.1);
+    }
+
+    .suggestion-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 32px rgba(102, 126, 234, 0.25);
+      border-color: rgba(102, 126, 234, 0.2);
+    }
+
+    .suggestion-photo-container {
+      text-align: center;
+      margin-bottom: 18px;
+    }
+
+    .suggestion-photo {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #667eea;
+      box-shadow: 0 6px 14px rgba(102, 126, 234, 0.2);
+    }
+
+    .suggestion-photo-placeholder {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 2.5em;
+      border: 3px solid #667eea;
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.25);
+    }
+
+    .suggestion-name {
+      font-size: 1.3em;
+      font-weight: 700;
+      color: #667eea;
+      margin-bottom: 6px;
+      text-align: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .suggestion-role {
+      text-align: center;
+      color: #667eea;
+      font-size: 0.9em;
+      margin-bottom: 14px;
+      padding: 6px 14px;
+      background: linear-gradient(135deg, #f0f0ff 0%, #f5f5ff 100%);
+      border-radius: 20px;
+      display: inline-block;
+      font-weight: 600;
+      border: 1px solid #d0c7ff;
+    }
+
+    .suggestion-info {
+      margin: 14px 0;
+    }
+
+    .info-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      font-size: 0.9em;
+      color: #555;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #667eea;
+      min-width: 70px;
+    }
+
+    .suggestion-interests {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid #f0f0f0;
+    }
+
+    .interests-label {
+      font-weight: 600;
+      color: #333;
+      font-size: 0.85em;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .interest-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .interest-tag {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 14px;
+      font-size: 0.8em;
+      font-weight: 500;
+      box-shadow: 0 2px 6px rgba(102, 126, 234, 0.2);
+    }
+
+    .suggestion-actions {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-view-profile,
+    .btn-message {
+      flex: 1;
+      padding: 10px;
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 0.9em;
+      text-decoration: none;
+      display: block;
+    }
+
+    .btn-view-profile {
+      background: transparent;
+      border: 2px solid #667eea;
+      color: #667eea;
+    }
+
+    .btn-view-profile:hover {
+      background: #667eea;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-message {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      border: 2px solid transparent;
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.25);
+    }
+
+    .btn-message:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(102, 126, 234, 0.35);
+    }
+
+    .match-badge {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 20px;
+      font-size: 0.75em;
+      font-weight: 600;
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+
+    .empty-state h2 {
+      color: #162938;
+      margin-bottom: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      font-size: 1.1em;
+    }
+
+    @media (max-width: 768px) {
+      .suggestions-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="home.html">Home</a>
+      <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html">Suggestions</a>
+      <a href="messages.html">Messages</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html">My Profile</a>
+      <button class="btnLogin-popup" onclick="handleLogout()">Logout</button>
+    </nav>
+  </header>
+
+  <div class="suggestions-container">
+    <div class="suggestions-header">
+      <h1>Suggested Connections</h1>
+      <p>Students we think you'd connect well with based on shared interests, hobbies, and complementary backgrounds</p>
+    </div>
+
+    <div id="suggestionsGrid" class="suggestions-grid">
+      <div class="loading">Loading suggested connections...</div>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script>
+    let suggestions = [];
+
+    // Load suggestions on page load
+    window.addEventListener('load', async () => {
+      if (!isUserLoggedIn()) {
+        window.location.href = 'index.html';
+        return;
+      }
+
+      await loadSuggestions();
+    });
+
+    // Load suggested connections
+    async function loadSuggestions() {
+      try {
+        const response = await fetchWithAuth('http://localhost:3001/api/profile/suggestions/connections');
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || `HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        suggestions = data.suggestions || [];
+        renderSuggestions();
+      } catch (error) {
+        console.error('Failed to load suggestions:', error);
+        document.getElementById('suggestionsGrid').innerHTML = `
+          <div class="empty-state">
+            <h2>Unable to load suggestions</h2>
+            <p>${error.message || 'Please try again later'}</p>
+          </div>
+        `;
+      }
+    }
+
+    // Render suggestions grid
+    function renderSuggestions() {
+      const container = document.getElementById('suggestionsGrid');
+      
+      if (suggestions.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>No suggestions yet</h2>
+            <p>Complete your profile with interests and hobbies to get personalized connection suggestions!</p>
+            <p style="margin-top: 20px;">
+              <a href="profile.html" style="color: #162938; font-weight: 600; text-decoration: underline;">
+                Update Your Profile
+              </a>
+            </p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = suggestions.map(student => {
+        const initial = student.fullName.charAt(0).toUpperCase();
+        const photoHtml = student.profile?.photo 
+          ? `<img src="${student.profile.photo}" alt="${student.fullName}" class="suggestion-photo">`
+          : `<div class="suggestion-photo-placeholder">${initial}</div>`;
+
+        const roleText = student.role === 'international' ? 'International Student' : 'Local Student';
+        
+        const interests = student.profile?.interests && Array.isArray(student.profile.interests)
+          ? student.profile.interests.slice(0, 3)
+          : [];
+
+        const interestsHtml = interests.length > 0 
+          ? `
+            <div class="suggestion-interests">
+              <div class="interests-label">Interests</div>
+              <div class="interest-tags">
+                ${interests.map(interest => `<span class="interest-tag">${interest}</span>`).join('')}
+              </div>
+            </div>
+          `
+          : '';
+
+        return `
+          <div class="suggestion-card" onclick="viewProfile('${student._id}')">
+            <div style="text-align: center;">
+              <span class="match-badge">Good Match</span>
+            </div>
+            <div class="suggestion-photo-container">
+              ${photoHtml}
+            </div>
+            <div class="suggestion-name">${student.fullName}</div>
+            <div style="text-align: center;">
+              <span class="suggestion-role">${roleText}</span>
+            </div>
+            
+            <div class="suggestion-info">
+              ${student.profile?.major ? `
+                <div class="info-row">
+                  <span class="info-label">Major:</span>
+                  <span>${student.profile.major}</span>
+                </div>
+              ` : ''}
+              ${student.profile?.year ? `
+                <div class="info-row">
+                  <span class="info-label">Year:</span>
+                  <span>${student.profile.year}</span>
+                </div>
+              ` : ''}
+              ${student.profile?.country ? `
+                <div class="info-row">
+                  <span class="info-label">From:</span>
+                  <span>${student.profile.country}</span>
+                </div>
+              ` : ''}
+            </div>
+
+            ${interestsHtml}
+
+            <div class="suggestion-actions" onclick="event.stopPropagation()">
+              <a href="student-detail.html?id=${student._id}" class="btn-view-profile">View Profile</a>
+              <button class="btn-message" onclick="startChat('${student._id}')">Message</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // View student profile
+    function viewProfile(studentId) {
+      window.location.href = `student-detail.html?id=${studentId}`;
+    }
+
+    // Start chat with a student
+    async function startChat(studentId) {
+      // Send an initial message to create the conversation
+      const confirmed = confirm('Start a conversation with this student?');
+      if (!confirmed) return;
+
+      try {
+        const response = await fetchWithAuth('http://localhost:3001/api/messages/send', {
+          method: 'POST',
+          body: JSON.stringify({
+            receiverId: studentId,
+            content: 'Hi! I saw your profile and would love to connect!'
+          })
+        });
+
+        if (response.ok) {
+          window.location.href = 'messages.html';
+        } else {
+          alert('Failed to start conversation');
+        }
+      } catch (error) {
+        console.error('Start chat error:', error);
+        alert('Failed to start conversation');
+      }
+    }
+
+    // Logout handler
+    function handleLogout() {
+      localStorage.removeItem('token');
+      window.location.href = 'index.html';
+    }
+  </script>
+</body>
+</html>

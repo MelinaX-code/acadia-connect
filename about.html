@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Acadia Connect | About</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="page-home">
+
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="home.html">Home</a>
+      <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a class="btnLogin-popup" href="index.html" id="loginBtn">Login</a>
+    </nav>
+  </header>
+
+  <main class="page-content">
+
+    <h1>About Acadia Connect</h1>
+
+    <section class="resource-section">
+      <h2>Our Mission</h2>
+      <p>
+        Acadia Connect is an online platform that brings together international and local students to get to know each other by hanging out at different places on campus and off campus based on their profile, interests, and hobbies. 
+      </p>
+    </section>
+
+    <section class="resource-section">
+      <h2>Making Friends Easier</h2>
+      <p>
+        The app is the best way to make friends at Acadia without feeling anxious about going to events or forcing yourself to socialize. It provides a natural, comfortable way to meet people from other countries and learn about different cultures.
+      </p>
+    </section>
+
+    <section class="resource-section">
+      <h2>Resources & Exploration</h2>
+      <p>
+        Beyond connecting with peers, Acadia Connect offers valuable resources for navigating administrative formalities or discovering what Wolfville has to offer. Whether you need practical information or want to explore your new community, we've got you covered.
+      </p>
+    </section>
+
+    <section class="resource-section">
+      <h2>Feeling at Home</h2>
+      <p>
+        Acadia Connect aims to strengthen the student experience and help you feel at home when you arrive at Acadia, whether you're a local or international student. We believe that every student deserves to feel welcomed, supported, and connected to their community.
+      </p>
+    </section>
+
+  </main>
+  <script src="api.js"></script>
+  <script>
+    // Show/hide profile link based on login status
+    window.addEventListener('load', () => {
+      const profileLink = document.getElementById('profileLink');
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
+      const loginBtn = document.getElementById('loginBtn');
+      if (isUserLoggedIn()) {
+        profileLink.style.display = 'block';
+        suggestionsLink.style.display = 'block';
+        messagesLink.style.display = 'block';
+        loginBtn.style.display = 'none';
+      } else {
+        profileLink.style.display = 'none';
+        suggestionsLink.style.display = 'none';
+        messagesLink.style.display = 'none';
+        loginBtn.style.display = 'inline-block';
+      }
+    });
+  </script>
+
+</body>
+</html>

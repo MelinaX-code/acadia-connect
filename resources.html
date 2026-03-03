@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudentConnect | Resources</title>
+
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="page-home">
+
+  
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="home.html">Home</a>
+      <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a class="btnLogin-popup" href="index.html" id="loginBtn">Login</a>
+    </nav>
+  </header>
+
+  <main class="page-content">
+
+    <h1>Student Resources</h1>
+
+    <p class="page-intro">
+      This page highlights useful academic, social, and daily-life resources to help students
+      feel supported and connected at Acadia University.
+    </p>
+
+
+    <section class="resource-section">
+      <h2>Getting Started & Daily Life</h2>
+
+      <div class="resource-item">
+        <h3>Bi-Weekly Grocery Shuttle</h3>
+        <p>
+          A free shuttle service that helps students travel to nearby grocery stores such as
+          Walmart, Superstore, and Sobeys in New Minas.
+        </p>
+        <p class="resource-why">
+          <strong>Why this helps:</strong> Ideal for students without access to a car and those
+          new to the area.
+        </p>
+      </div>
+    </section>
+
+
+    <section class="resource-section">
+      <h2>Academic Help & Study Support</h2>
+
+      <div class="resource-item">
+        <h3>MASH (Math & Statistics Help)</h3>
+        <p>
+          Drop-in support for students who need help understanding math and statistics concepts.
+        </p>
+        <p class="resource-why">
+          <strong>Why this helps:</strong> Provides a welcoming space to ask questions and build
+          confidence in math-related courses.
+        </p>
+      </div>
+
+      <div class="resource-item">
+        <h3>CACHE (Computing Help Centre)</h3>
+        <p>
+          A support space for programming-related courses such as Python and Java, where students
+          can get help and collaborate with peers.
+        </p>
+        <p class="resource-why">
+          <strong>Why this helps:</strong> Supports learning while encouraging peer interaction
+          and collaboration.
+        </p>
+      </div>
+    </section>
+
+  </main>
+  <script src="api.js"></script>
+  <script>
+    // Show/hide profile link based on login status
+    window.addEventListener('load', () => {
+      const profileLink = document.getElementById('profileLink');
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
+      const loginBtn = document.getElementById('loginBtn');
+      if (isUserLoggedIn()) {
+        profileLink.style.display = 'block';
+        suggestionsLink.style.display = 'block';
+        messagesLink.style.display = 'block';
+        loginBtn.style.display = 'none';
+      } else {
+        profileLink.style.display = 'none';
+        suggestionsLink.style.display = 'none';
+        messagesLink.style.display = 'none';
+        loginBtn.style.display = 'inline-block';
+      }
+    });
+  </script>
+
+</body>
+</html>
