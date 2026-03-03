@@ -30,8 +30,8 @@ if (loginForm) {
     try {
       const result = await loginUser(email, password);
       alert('Login successful!');
-      // Redirect to profile page
-      window.location.href = 'profile.html';
+      // Redirect to home page (shows profile when logged in)
+      window.location.href = 'home.html';
     } catch (error) {
       alert('Login failed: ' + error.message);
     }
@@ -57,8 +57,8 @@ if (registerForm) {
     try {
       const result = await registerUser(fullName, email, password, role);
       alert('Registration successful!');
-      // Redirect to profile page
-      window.location.href = 'profile.html';
+      // Redirect to home page (shows profile when logged in)
+      window.location.href = 'home.html';
     } catch (error) {
       alert('Registration failed: ' + error.message);
     }
