@@ -1,14 +1,15 @@
 const express = require('express');
 const User = require('../models/User');
 const adminAuth = require('../middleware/admin');
+const pool = require('../db/pool');
 
 const router = express.Router();
 
 // Get all users
 router.get('/users', adminAuth, async (req, res) => {
   try {
-    const users = await User.find({}).select('-password');
-    res.json(users);
+    const rows = await User.listAll();
+    res.json(rows.map(User.rowToPublicUser));
   } catch (error) {
     console.error('Get all users error:', error);
     res.status(500).json({ error: 'Failed to fetch users' });
@@ -18,11 +19,11 @@ router.get('/users', adminAuth, async (req, res) => {
 // Get user by ID
 router.get('/users/:id', adminAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select('-password');
-    if (!user) {
+    const row = await User.findById(req.params.id);
+    if (!row) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json(user);
+    res.json(User.rowToPublicUser(row));
   } catch (error) {
     console.error('Get user error:', error);
     res.status(500).json({ error: 'Failed to fetch user' });
@@ -32,30 +33,35 @@ router.get('/users/:id', adminAuth, async (req, res) => {
 // Update user (admin can update any field)
 router.put('/users/:id', adminAuth, async (req, res) => {
   try {
-    const { fullName, email, role, isAdmin, password } = req.body;
-    
-    const updateData = {};
-    if (fullName) updateData.fullName = fullName;
-    if (email) updateData.email = email;
-    if (role) updateData.role = role;
-    if (isAdmin !== undefined) updateData.isAdmin = isAdmin;
+    const { firstName, lastName, fullName, email, gender, country, department, role, isAdmin, password } = req.body;
+
+    const patch = {};
+    if (firstName) patch.firstName = firstName;
+    if (lastName) patch.lastName = lastName;
+    if (fullName) patch.fullName = fullName;
+    if (email) patch.email = email;
+    if (gender) patch.gender = gender;
+    if (country) patch.country = country;
+    if (department) patch.department = department;
+    if (role) patch.role = role;
+    if (isAdmin !== undefined) patch.isAdmin = isAdmin;
     if (password) {
-      updateData.password = password;
+      const passwordOk = /^(?=.*[a-z])(?=.*[A-Z]).{6,}$/.test(String(password));
+      if (!passwordOk) {
+        return res.status(400).json({ error: 'Password must be at least 6 characters and include at least one uppercase and one lowercase letter' });
+      }
+      patch.password = password;
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-password');
+    const updatedRow = await User.adminUpdateUser(req.params.id, patch);
 
-    if (!user) {
+    if (!updatedRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
       message: 'User updated successfully',
-      user,
+      user: User.rowToPublicUser(updatedRow),
     });
   } catch (error) {
     console.error('Update user error:', error);
@@ -71,15 +77,15 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete your own admin account' });
     }
 
-    const user = await User.findByIdAndDelete(req.params.id);
+    const deletedRow = await User.deleteUser(req.params.id);
 
-    if (!user) {
+    if (!deletedRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
       message: 'User deleted successfully',
-      deletedUser: user.fullName,
+      deletedUser: deletedRow.full_name,
     });
   } catch (error) {
     console.error('Delete user error:', error);
@@ -90,19 +96,15 @@ router.delete('/users/:id', adminAuth, async (req, res) => {
 // Make user an admin
 router.post('/users/:id/make-admin', adminAuth, async (req, res) => {
   try {
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { isAdmin: true },
-      { new: true }
-    ).select('-password');
+    const updatedRow = await User.adminUpdateUser(req.params.id, { isAdmin: true });
 
-    if (!user) {
+    if (!updatedRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
-      message: 'User promoted to admin',
-      user,
+      message: 'User is now an admin',
+      user: User.rowToPublicUser(updatedRow),
     });
   } catch (error) {
     console.error('Make admin error:', error);
@@ -118,19 +120,15 @@ router.post('/users/:id/remove-admin', adminAuth, async (req, res) => {
       return res.status(400).json({ error: 'Cannot remove your own admin status' });
     }
 
-    const user = await User.findByIdAndUpdate(
-      req.params.id,
-      { isAdmin: false },
-      { new: true }
-    ).select('-password');
+    const updatedRow = await User.adminUpdateUser(req.params.id, { isAdmin: false });
 
-    if (!user) {
+    if (!updatedRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
       message: 'Admin status removed from user',
-      user,
+      user: User.rowToPublicUser(updatedRow),
     });
   } catch (error) {
     console.error('Remove admin error:', error);
@@ -141,16 +139,16 @@ router.post('/users/:id/remove-admin', adminAuth, async (req, res) => {
 // Get admin dashboard stats
 router.get('/stats', adminAuth, async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments();
-    const adminUsers = await User.countDocuments({ isAdmin: true });
-    const internationalStudents = await User.countDocuments({ role: 'international' });
-    const localStudents = await User.countDocuments({ role: 'local' });
+    const [[totalUsersRow]] = await pool.execute('SELECT COUNT(*) AS c FROM users');
+    const [[adminUsersRow]] = await pool.execute('SELECT COUNT(*) AS c FROM users WHERE is_admin = 1');
+    const [[internationalRow]] = await pool.execute("SELECT COUNT(*) AS c FROM users WHERE role = 'international'");
+    const [[localRow]] = await pool.execute("SELECT COUNT(*) AS c FROM users WHERE role = 'local'");
 
     res.json({
-      totalUsers,
-      adminUsers,
-      internationalStudents,
-      localStudents,
+      totalUsers: Number(totalUsersRow.c || 0),
+      adminUsers: Number(adminUsersRow.c || 0),
+      internationalStudents: Number(internationalRow.c || 0),
+      localStudents: Number(localRow.c || 0),
     });
   } catch (error) {
     console.error('Get stats error:', error);

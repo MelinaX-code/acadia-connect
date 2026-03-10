@@ -250,14 +250,13 @@
   <header>
     <h2 class="logo">Acadia Connect</h2>
     <nav class="navigation">
-      <a href="profile.html">Home</a>
       <a href="browse-students.html">Find Students</a>
-      <a href="suggested-connections.html">Suggestions</a>
-      <a href="messages.html">Messages</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
-      <a href="profile.html">My Profile</a>
-      <button class="btnLogin-popup" onclick="handleLogout()">Logout</button>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <button class="btnLogin-popup" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
     </nav>
   </header>
 
@@ -279,9 +278,19 @@
     // Load suggestions on page load
     window.addEventListener('load', async () => {
       if (!isUserLoggedIn()) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
       }
+
+      // Update navigation items that should only show when logged in
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
+      const profileLink = document.getElementById('profileLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (suggestionsLink) suggestionsLink.style.display = 'block';
+      if (messagesLink) messagesLink.style.display = 'block';
+      if (profileLink) profileLink.style.display = 'block';
+      if (logoutBtn) logoutBtn.style.display = 'inline-block';
 
       await loadSuggestions();
     });
@@ -367,10 +376,10 @@
             </div>
             
             <div class="suggestion-info">
-              ${student.profile?.major ? `
+              ${student.department ? `
                 <div class="info-row">
-                  <span class="info-label">Major:</span>
-                  <span>${student.profile.major}</span>
+                  <span class="info-label">Department:</span>
+                  <span>${student.department}</span>
                 </div>
               ` : ''}
               ${student.profile?.year ? `

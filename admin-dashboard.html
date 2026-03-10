@@ -399,10 +399,9 @@
   <header>
     <h2 class="logo">Acadia Connect</h2>
     <nav class="navigation">
-      <a href="profile.html">Home</a>
       <a href="browse-students.html">Find Students</a>
-      <a href="profile.html" id="profileLink">My Profile</a>
-      <a href="#" id="logoutBtn">Logout</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a href="#" id="logoutBtn" style="display:none;">Logout</a>
     </nav>
   </header>
 
@@ -451,19 +450,42 @@
       <h2 id="modalTitle">Add New User</h2>
       <form id="userForm">
         <div class="form-group-modal">
-          <label for="userFullName">Full Name</label>
-          <input type="text" id="userFullName" required>
+          <label for="userFirstName">First Name</label>
+          <input type="text" id="userFirstName" required>
+        </div>
+        <div class="form-group-modal">
+          <label for="userLastName">Last Name</label>
+          <input type="text" id="userLastName" required>
         </div>
         <div class="form-group-modal">
           <label for="userEmail">Email</label>
           <input type="email" id="userEmail" required>
         </div>
+
+        <div class="form-group-modal">
+          <label for="userGender">Gender</label>
+          <select id="userGender" required>
+            <option value="male">Male</option>
+            <option value="female">Female</option>
+          </select>
+        </div>
+
         <div class="form-group-modal">
           <label for="userRole">Role</label>
           <select id="userRole" required>
             <option value="international">International Student</option>
             <option value="local">Local Student</option>
           </select>
+        </div>
+
+        <div class="form-group-modal">
+          <label for="userCountry">Country</label>
+          <input type="text" id="userCountry" value="Canada" required>
+        </div>
+
+        <div class="form-group-modal">
+          <label for="userDepartment">Department</label>
+          <input type="text" id="userDepartment" required>
         </div>
         <div class="form-group-modal">
           <label for="userPassword">Password</label>
@@ -490,9 +512,14 @@
     // Check if user is logged in and is admin
     window.addEventListener('load', async () => {
       if (!isUserLoggedIn()) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
       }
+
+      const profileLink = document.getElementById('profileLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+      if (profileLink) profileLink.style.display = 'block';
+      if (logoutBtn) logoutBtn.style.display = 'block';
 
       try {
         const user = JSON.parse(localStorage.getItem('user'));
@@ -545,7 +572,9 @@
             <tr>
               <th>Name</th>
               <th>Email</th>
+              <th>Department</th>
               <th>Role</th>
+              <th>Country</th>
               <th>Status</th>
               <th>Joined</th>
               <th>Actions</th>
@@ -561,7 +590,13 @@
                   <div class="user-email">${user.email}</div>
                 </td>
                 <td>
+                  <div class="user-email">${(user.department || '-') }</div>
+                </td>
+                <td>
                   <span class="role-badge">${user.role === 'international' ? '🌍 International' : '📍 Local'}</span>
+                </td>
+                <td>
+                  <div class="user-email">${(user.profile && user.profile.country) ? user.profile.country : '-'}</div>
                 </td>
                 <td>
                   ${user.isAdmin ? '<span class="admin-badge">👑 Admin</span>' : '<span class="user-badge">User</span>'}
@@ -590,7 +625,9 @@
       const query = e.target.value.toLowerCase();
       const filtered = allUsers.filter(user => 
         user.fullName.toLowerCase().includes(query) || 
-        user.email.toLowerCase().includes(query)
+        user.email.toLowerCase().includes(query) ||
+        String(user.department || '').toLowerCase().includes(query) ||
+        String((user.profile && user.profile.country) || '').toLowerCase().includes(query)
       );
       renderUsers(filtered);
     });
@@ -600,6 +637,7 @@
       editingUserId = null;
       document.getElementById('modalTitle').textContent = 'Add New User';
       document.getElementById('userForm').reset();
+      document.getElementById('userCountry').value = 'Canada';
       document.getElementById('userPassword').required = true;
       document.getElementById('userModal').classList.add('show');
     }
@@ -611,9 +649,13 @@
         editingUserId = userId;
         
         document.getElementById('modalTitle').textContent = 'Edit User';
-        document.getElementById('userFullName').value = user.fullName;
+        document.getElementById('userFirstName').value = user.firstName || (user.fullName ? user.fullName.split(' ')[0] : '');
+        document.getElementById('userLastName').value = user.lastName || (user.fullName ? user.fullName.split(' ').slice(1).join(' ') : '');
         document.getElementById('userEmail').value = user.email;
+        document.getElementById('userGender').value = user.gender || 'male';
         document.getElementById('userRole').value = user.role;
+        document.getElementById('userCountry').value = (user.profile && user.profile.country) ? user.profile.country : 'Canada';
+        document.getElementById('userDepartment').value = user.department || '';
         document.getElementById('userPassword').value = '';
         document.getElementById('userPassword').required = false;
         document.getElementById('userIsAdmin').checked = user.isAdmin;
@@ -633,25 +675,50 @@
     document.getElementById('userForm').addEventListener('submit', async (e) => {
       e.preventDefault();
 
+      const password = document.getElementById('userPassword').value;
+      if (password) {
+        const passwordOk = /^(?=.*[a-z])(?=.*[A-Z]).{6,}$/.test(String(password));
+        if (!passwordOk) {
+          showMessage('Password must be at least 6 characters and include at least one uppercase and one lowercase letter', 'error');
+          return;
+        }
+      }
+
       const userData = {
-        fullName: document.getElementById('userFullName').value,
+        firstName: document.getElementById('userFirstName').value,
+        lastName: document.getElementById('userLastName').value,
         email: document.getElementById('userEmail').value,
+        gender: document.getElementById('userGender').value,
         role: document.getElementById('userRole').value,
+        country: document.getElementById('userCountry').value,
+        department: document.getElementById('userDepartment').value,
         isAdmin: document.getElementById('userIsAdmin').checked,
       };
 
-      const password = document.getElementById('userPassword').value;
-      if (password) {
-        userData.password = password;
-      }
+      if (password) userData.password = password;
 
       try {
         if (editingUserId) {
           await updateUser(editingUserId, userData);
           showMessage('User updated successfully', 'success');
         } else {
-          userData.password = password || 'defaultPassword123!';
-          await apiCall('/auth/register', 'POST', userData);
+          if (!password) {
+            showMessage('Password is required when creating a user', 'error');
+            return;
+          }
+
+          const createPayload = {
+            ...userData,
+            password,
+            confirmPassword: password,
+          };
+
+          const result = await apiCall('/auth/register', 'POST', createPayload);
+
+          // If admin checkbox is set, promote after creation.
+          if (userData.isAdmin && result && result.user && result.user.id) {
+            await makeUserAdmin(result.user.id);
+          }
           showMessage('User created successfully', 'success');
         }
 

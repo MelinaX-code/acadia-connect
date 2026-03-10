@@ -1,10 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const mongoose = require('mongoose');
+// Load environment variables before importing modules that read from process.env
+dotenv.config({ override: true });
 
-// Load environment variables
-dotenv.config();
+const pool = require('./db/pool');
 
 const app = express();
 
@@ -12,29 +12,28 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 
-// Connect to MongoDB
-const connectDB = async () => {
+async function connectDB() {
   try {
-    await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/acadia-connect');
-    console.log('MongoDB connected successfully');
+    await pool.query('SELECT 1');
+    console.log('MariaDB/MySQL connected successfully');
   } catch (error) {
-    console.error('MongoDB connection failed:', error);
+    console.error('MariaDB/MySQL connection failed:', error);
     process.exit(1);
   }
-};
-
-connectDB();
+}
 
 // Import routes
 const authRoutes = require('./routes/auth');
 const profileRoutes = require('./routes/profile');
 const messageRoutes = require('./routes/messages');
+const groupRoutes = require('./routes/groups');
 const adminRoutes = require('./routes/admin');
 
 // Use routes
 app.use('/api/auth', authRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/messages', messageRoutes);
+app.use('/api/groups', groupRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health check endpoint
@@ -48,8 +47,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal server error' });
 });
 
-// Start server
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
-});
+async function start() {
+  await connectDB();
+
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+start();

@@ -260,14 +260,13 @@
   <header>
     <h2 class="logo">Acadia Connect</h2>
     <nav class="navigation">
-      <a href="profile.html">Home</a>
       <a href="browse-students.html">Find Students</a>
-      <a href="suggested-connections.html">Suggestions</a>
-      <a href="messages.html">Messages</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
-      <a href="profile.html">My Profile</a>
-      <a href="#" id="logoutBtn">Logout</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a href="#" id="logoutBtn" style="display:none;">Logout</a>
     </nav>
   </header>
 
@@ -298,8 +297,8 @@
             <span class="info-value" id="yearView">-</span>
           </div>
           <div class="info-item">
-            <span class="info-label">Major/Program</span>
-            <span class="info-value" id="majorView">-</span>
+            <span class="info-label">Department</span>
+            <span class="info-value" id="departmentView">-</span>
           </div>
           <div class="info-item">
             <span class="info-label">Country</span>
@@ -330,6 +329,7 @@
 
       <div class="edit-toggle">
         <button class="btn-edit" onclick="enableEditMode()">Edit Profile</button>
+        <a class="btn-edit" href="change-password.html">Change Password</a>
         <button class="btn-logout" id="logoutBtn2">Logout</button>
       </div>
     </div>
@@ -381,8 +381,8 @@
           </div>
 
           <div class="form-group">
-            <label for="major">Major/Program</label>
-            <input type="text" id="major" placeholder="e.g., Computer Science">
+            <label for="department">Department</label>
+            <input type="text" id="department" placeholder="e.g., Computer Science">
           </div>
 
           <div class="form-group">
@@ -427,8 +427,25 @@
     // Check if user is logged in
     window.addEventListener('load', async () => {
       if (!isUserLoggedIn()) {
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
+      }
+
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
+      const profileLink = document.getElementById('profileLink');
+      const logoutBtn = document.getElementById('logoutBtn');
+
+      if (suggestionsLink) suggestionsLink.style.display = 'block';
+      if (messagesLink) messagesLink.style.display = 'block';
+      if (profileLink) profileLink.style.display = 'block';
+      if (logoutBtn) {
+        logoutBtn.style.display = 'block';
+        logoutBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          logoutUser();
+          window.location.href = 'index.html';
+        });
       }
 
       // Load user profile
@@ -445,7 +462,7 @@
         document.getElementById('emailView').textContent = profile.email || '-';
         document.getElementById('roleView').textContent = profile.role === 'international' ? 'International Student' : 'Local Student' || '-';
         document.getElementById('yearView').textContent = profile.profile?.year || '-';
-        document.getElementById('majorView').textContent = profile.profile?.major || '-';
+        document.getElementById('departmentView').textContent = profile.department || '-';
         document.getElementById('countryView').textContent = profile.profile?.country || '-';
         document.getElementById('languagesView').textContent = profile.profile?.languages?.join(', ') || '-';
         document.getElementById('bioView').textContent = profile.profile?.bio || 'No bio added yet.';
@@ -463,7 +480,7 @@
         document.getElementById('email').value = profile.email || '';
         document.getElementById('role').value = profile.role || '';
         document.getElementById('year').value = profile.profile?.year || '';
-        document.getElementById('major').value = profile.profile?.major || '';
+        document.getElementById('department').value = profile.department || '';
         document.getElementById('country').value = profile.profile?.country || '';
         document.getElementById('languages').value = profile.profile?.languages?.join(', ') || '';
         document.getElementById('bio').value = profile.profile?.bio || '';
@@ -521,7 +538,7 @@
           bio: document.getElementById('bio').value,
           hobbies,
           interests,
-          major: document.getElementById('major').value,
+          department: document.getElementById('department').value,
           year: document.getElementById('year').value,
           country: document.getElementById('country').value,
           languages,

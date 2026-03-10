@@ -4,12 +4,13 @@
 
 ### **Architecture Overview**
 ```
-Frontend (HTML/CSS/JS) ← API Calls → Backend (Express.js) ← Database (MongoDB)
+Frontend (HTML/CSS/JS) ← API Calls → Backend (Express.js) ← Database (MariaDB/MySQL)
 ```
 
 ### **Frontend Files:**
-- `index.html` - Login/Register page
-- `home.html` - Home page
+- `login.html` - Login/Register page
+- `index.html` - Home page (site entry point)
+- `home.html` - Legacy redirect stub → `index.html`
 - `admin-dashboard.html` - Admin panel (NEW! ✨)
 - `resources.html` - Resources page
 - `about.html` - About page
@@ -26,8 +27,10 @@ Frontend (HTML/CSS/JS) ← API Calls → Backend (Express.js) ← Database (Mong
 Located in `/backend` folder:
 - `server.js` - Express server (runs on port 3001)
 - `package.json` - Dependencies
-- `.env` - Configuration (MongoDB connection)
-- `models/User.js` - Database schema (with admin field)
+- `.env` - Configuration (DB_* connection settings)
+- `db/pool.js` - MariaDB/MySQL connection pool
+- `models/User.js` - SQL-backed user model (with admin field)
+- `models/Message.js` - SQL-backed message model
 - `routes/auth.js` - Register/Login endpoints
 - `routes/profile.js` - Get/Update profile endpoints
 - `routes/messages.js` - Messaging endpoints
@@ -36,22 +39,23 @@ Located in `/backend` folder:
 - `middleware/admin.js` - Admin-only route protection (NEW! ✨)
 
 ### **Database:**
-- MongoDB (running in Docker)
-- Stores: Users with email, password (hashed), and profile info
+- MariaDB/MySQL
+- Schema + seed scripts live in `backend/sql/`
+- Stores: Users (UUID id) with email/password (bcrypt), profile info, and messages
 
 ---
 
 ## Authentication System Explained
 
 ### **How It Works:**
-1. User registers → Password hashed with Bcrypt → Saved to MongoDB
+1. User registers → Password hashed with Bcrypt → Saved to MariaDB/MySQL
 2. User logs in → Password compared → JWT token generated → Stored in browser
 3. User accesses profile → JWT token sent with request → Backend verifies → Returns data
 
 ### **Technology:**
 - **JWT (JSON Web Tokens)** - For session management
 - **Bcrypt** - For password hashing
-- **MongoDB** - For data storage
+- **MariaDB/MySQL** - For data storage
 - **Express.js** - For backend API
 
 ---
@@ -61,17 +65,18 @@ Located in `/backend` folder:
 ### **Working:**
 - ✅ User Registration
 - ✅ User Login
-- ✅ View Profile (Full Name, Email, Year, Major, Country, Languages, Bio, Hobbies, Interests)
-- ✅ Edit Profile
+- ✅ Home page entry (logged-out landing / logged-in experience)
+- ✅ View & Edit Profile (Full Name, Email, Year, Department, Country, Languages, Bio, Hobbies, Interests)
 - ✅ Upload Profile Photo
 - ✅ User Logout
 - ✅ Protected Profile Page (only accessible if logged in)
+- ✅ Browse Students + Student Detail pages
+- ✅ Suggested Connections
+- ✅ Messaging System
+- ✅ Admin Dashboard (admin-only)
 
 ### **NOT Yet Implemented:**
-- ❌ View Other Students' Profiles
-- ❌ Find/Match Students by Interests
-- ❌ Messaging System
-- ❌ Create/Join Groups/Meetups
+- ❌ Create/Join Groups/Meetups (if desired)
 
 ---
 
@@ -81,7 +86,8 @@ Located in `/backend` folder:
 Capstone Project/
 ├── frontend files:
 │   ├── index.html
-│   ├── home.html
+│   ├── login.html
+│   ├── home.html (redirect stub)
 │   ├── resources.html
 │   ├── about.html
 │   ├── profile.html (NEW)
@@ -92,22 +98,33 @@ Capstone Project/
 └── backend/
     ├── server.js
     ├── package.json
-    ├── .env (MongoDB connection)
+  ├── .env (DB connection)
+  ├── db/
+  │   └── pool.js
+  ├── sql/
+  │   ├── 001_schema.sql
+  │   └── 002_seed.sql
     ├── models/
-    │   └── User.js (UPDATED with more fields)
+  │   ├── User.js
+  │   └── Message.js
     ├── routes/
     │   ├── auth.js
-    │   └── profile.js
+  │   ├── profile.js
+  │   ├── messages.js
+  │   └── admin.js
     └── middleware/
-        └── auth.js
+    ├── auth.js
+    └── admin.js
 ```
 
 ---
 
 ## To Run Everything
 
-### **Step 1: Start MongoDB Docker**
-MongoDB should already be running in Docker (port 27017)
+### **Step 1: Start MariaDB/MySQL**
+Make sure MariaDB/MySQL is running locally.
+
+Create the database + tables and seed sample data using the SQL scripts in `backend/sql/`.
 
 ### **Step 2: Start Backend**
 ```bash
@@ -127,38 +144,38 @@ Open any `.html` file in your browser
 1. User fills form (name, email, password, role)
 2. Clicks "Register"
 3. Frontend sends data to `POST /api/auth/register`
-4. Backend hashes password + saves to MongoDB
+4. Backend hashes password + saves to MariaDB/MySQL
 5. Backend returns JWT token
 6. Frontend stores token in `localStorage`
-7. Frontend redirects to `profile.html`
-8. Page loads and shows user's profile
+7. Frontend redirects to `index.html`
+8. Home page shows the logged-in experience
 
 ### **Login Flow:**
 1. User enters email + password
 2. Clicks "Login"
 3. Frontend sends data to `POST /api/auth/login`
-4. Backend verifies password against MongoDB record
+4. Backend verifies password against MariaDB/MySQL record
 5. Backend returns JWT token if password correct
 6. Frontend stores token in `localStorage`
-7. Frontend redirects to `profile.html`
+7. Frontend redirects to `index.html`
 
 ---
 
-## User Data in MongoDB
+## User Data (stored in SQL)
 
-When a user registers, this is saved:
+When a user registers, this is the *shape* the frontend works with:
 ```json
 {
-  "_id": "auto-generated-id",
+  "_id": "uuid",
   "fullName": "Jane Doe",
   "email": "jane@example.com",
+  "department": "Computer Science",
   "password": "hashed-bcrypt-password",
   "role": "international",
   "profile": {
     "bio": "I love...",
     "hobbies": ["gaming", "reading"],
     "interests": ["CS", "AI"],
-    "major": "Computer Science",
     "year": "2nd Year",
     "country": "India",
     "languages": ["English", "Hindi"],
@@ -174,7 +191,7 @@ When a user registers, this is saved:
 ## Next Steps (What We Should Build)
 
 1. **Browse Students** - See profiles of other students
-2. **Search/Filter** - Find students by major, interests, languages, etc.
+2. **Search/Filter** - Find students by department, interests, languages, etc.
 3. **Messaging** - Send messages to other students
 4. **Groups/Meetups** - Create or join study groups, social events
 5. **Save Favorites** - Save favorite student profiles

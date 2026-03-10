@@ -41,6 +41,25 @@
       font-weight: 500;
     }
 
+    .search-section select {
+      padding: 14px 18px;
+      border: 2px solid #fff;
+      border-radius: 10px;
+      font-size: 0.95em;
+      min-width: 220px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #333;
+      transition: all 0.3s;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .search-section select:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+      border-color: #667eea;
+    }
+
     .search-section input:focus {
       outline: none;
       box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
@@ -240,15 +259,14 @@
   <header>
     <h2 class="logo">Acadia Connect</h2>
     <nav class="navigation">
-      <a href="profile.html">Home</a>
       <a href="browse-students.html">Find Students</a>
-      <a href="suggested-connections.html">Suggestions</a>
-      <a href="messages.html">Messages</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
       <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
       <a href="#" id="logoutBtn" style="display:none;">Logout</a>
-      <a href="index.html" class="btnLogin-popup" id="loginBtn">Login</a>
+      <a href="login.html" class="btnLogin-popup" id="loginBtn">Login</a>
     </nav>
   </header>
 
@@ -259,14 +277,20 @@
     </p>
 
     <div class="search-section">
-      <input type="text" id="searchInput" placeholder="🔍 Search by name, major, interests...">
+      <input type="text" id="searchInput" placeholder="🔍 Search by name, department, interests...">
+      <select id="countryFilter" aria-label="Filter by country">
+        <option value="all">🌎 All Countries</option>
+      </select>
+      <select id="departmentFilter" aria-label="Filter by department">
+        <option value="all">🏫 All Departments</option>
+      </select>
       <button onclick="searchStudents()">Search</button>
     </div>
 
     <div class="filters">
-      <button class="filter-btn active" onclick="filterByRole('all')">👥 Everyone</button>
-      <button class="filter-btn" onclick="filterByRole('international')">🌍 International</button>
-      <button class="filter-btn" onclick="filterByRole('local')">📍 Local</button>
+      <button class="filter-btn active" onclick="filterByRole('all', event)">👥 Everyone</button>
+      <button class="filter-btn" onclick="filterByRole('international', event)">🌍 International</button>
+      <button class="filter-btn" onclick="filterByRole('local', event)">📍 Local</button>
     </div>
 
     <div class="students-grid" id="studentsGrid">
@@ -278,15 +302,24 @@
   <script>
     let allStudents = [];
     let filteredStudents = [];
-    let currentFilter = 'all';
+    const activeFilters = {
+      role: 'all',
+      country: 'all',
+      department: 'all',
+      query: '',
+    };
 
     // Check login status and navigation
     window.addEventListener('load', async () => {
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
       const profileLink = document.getElementById('profileLink');
       const loginBtn = document.getElementById('loginBtn');
       const logoutBtn = document.getElementById('logoutBtn');
 
       if (isUserLoggedIn()) {
+        if (suggestionsLink) suggestionsLink.style.display = 'block';
+        if (messagesLink) messagesLink.style.display = 'block';
         profileLink.style.display = 'block';
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'block';
@@ -298,21 +331,172 @@
         window.location.href = 'index.html';
       });
 
+      // Populate filter dropdowns immediately (exact-only preset lists)
+      // so they show even if the API fails or the backend is down.
+      populateFilterOptions();
+
       // Load all students
       await loadStudents();
     });
 
     async function loadStudents() {
       try {
-        const students = await fetch('http://localhost:3001/api/profile/all').then(r => r.json());
+        const students = await apiCall('/profile/all', 'GET');
+        if (!Array.isArray(students)) {
+          throw new Error('Unexpected response while loading students');
+        }
+
         // Show all students (they all have profiles)
         allStudents = students;
-        filteredStudents = allStudents;
+        applyFilters();
         displayStudents();
       } catch (error) {
         console.error('Error loading students:', error);
+        allStudents = [];
+        filteredStudents = [];
         document.getElementById('studentsGrid').innerHTML = '<div class="no-students">😅 Oops! We couldn\'t load students. Try again!</div>';
       }
+    }
+
+    function normalizeString(value) {
+      return (value ?? '').toString().trim().toLowerCase();
+    }
+
+    function getStudentCountry(student) {
+      return student?.profile?.country || '';
+    }
+
+    function getStudentDepartment(student) {
+      return student?.department || '';
+    }
+
+    function populateFilterOptions() {
+      const countrySelect = document.getElementById('countryFilter');
+      const deptSelect = document.getElementById('departmentFilter');
+      if (!countrySelect || !deptSelect) return;
+
+      // Preset lists ensure users can filter even if there are currently
+      // no students from a given country/department in the dataset.
+      // Keep in sync with the Registration form country list.
+      const presetCountries = [
+        'Canada',
+        'United States',
+        'United Kingdom',
+        'Australia',
+        'France',
+        'Germany',
+        'Spain',
+        'Italy',
+        'India',
+        'China',
+        'Japan',
+        'South Korea',
+        'Vietnam',
+        'Philippines',
+        'Pakistan',
+        'Bangladesh',
+        'Nigeria',
+        'Ghana',
+        'Kenya',
+        'South Africa',
+        'Egypt',
+        'Mexico',
+        'Brazil',
+        'Turkey',
+        'Saudi Arabia',
+        'United Arab Emirates',
+      ];
+
+      // Keep in sync with the Registration form department list.
+      const presetDepartments = [
+        'Computer Science',
+        'Data Science',
+        'Information Technology',
+        'Engineering',
+        'Business Administration',
+        'Economics',
+        'Psychology',
+        'Biology',
+        'Chemistry',
+        'Physics',
+        'Mathematics',
+        'Environmental Science',
+        'Nursing',
+        'Education',
+        'Political Science',
+        'Sociology',
+        'History',
+        'English',
+        'Philosophy',
+        'Fine Arts',
+        'Music',
+        'Kinesiology',
+      ];
+
+      // Exact-only lists: do not add values from the student dataset.
+      const countries = presetCountries
+        .map(v => (v ?? '').toString().trim())
+        .filter(Boolean)
+        .filter((v, idx, arr) => arr.indexOf(v) === idx)
+        .sort((a, b) => a.localeCompare(b));
+
+      const departments = presetDepartments
+        .map(v => (v ?? '').toString().trim())
+        .filter(Boolean)
+        .filter((v, idx, arr) => arr.indexOf(v) === idx)
+        .sort((a, b) => a.localeCompare(b));
+
+      countrySelect.innerHTML = '<option value="all">🌎 All Countries</option>' +
+        countries.map(c => `<option value="${c.replace(/"/g, '&quot;')}">${c}</option>`).join('');
+
+      deptSelect.innerHTML = '<option value="all">🏫 All Departments</option>' +
+        departments.map(d => `<option value="${d.replace(/"/g, '&quot;')}">${d}</option>`).join('');
+
+      countrySelect.addEventListener('change', () => {
+        activeFilters.country = countrySelect.value;
+        applyFilters();
+        displayStudents();
+      });
+
+      deptSelect.addEventListener('change', () => {
+        activeFilters.department = deptSelect.value;
+        applyFilters();
+        displayStudents();
+      });
+    }
+
+    function applyFilters() {
+      const role = activeFilters.role;
+      const country = activeFilters.country;
+      const department = activeFilters.department;
+      const query = normalizeString(activeFilters.query);
+
+      filteredStudents = allStudents.filter(student => {
+        if (role !== 'all' && student.role !== role) return false;
+
+        const studentCountry = getStudentCountry(student);
+        if (country !== 'all' && studentCountry !== country) return false;
+
+        const studentDepartment = getStudentDepartment(student);
+        if (department !== 'all' && studentDepartment !== department) return false;
+
+        if (!query) return true;
+
+        const haystacks = [
+          student.fullName,
+          studentDepartment,
+          studentCountry,
+        ].filter(Boolean).map(normalizeString);
+
+        const anyInLists = (arr) => Array.isArray(arr) && arr.some(v => normalizeString(v).includes(query));
+
+        return (
+          haystacks.some(h => h.includes(query)) ||
+          anyInLists(student.profile?.interests) ||
+          anyInLists(student.profile?.hobbies) ||
+          anyInLists(student.profile?.languages)
+        );
+      });
     }
 
     function displayStudents() {
@@ -329,7 +513,7 @@
           <div class="student-name">${student.fullName}</div>
           <div class="student-role">${student.role === 'international' ? 'From elsewhere' : 'Local legend'}</div>
           
-          ${student.profile?.major ? `<div class="student-info"><strong>Studying:</strong> ${student.profile.major}</div>` : ''}
+          ${student.department ? `<div class="student-info"><strong>Department:</strong> ${student.department}</div>` : ''}
           ${student.profile?.year ? `<div class="student-info"><strong>Year:</strong> ${student.profile.year}</div>` : ''}
           ${student.profile?.country ? `<div class="student-info"><strong>From:</strong> ${student.profile.country}</div>` : ''}
           ${student.profile?.languages?.length ? `<div class="student-info"><strong>Languages:</strong> ${student.profile.languages.join(', ')}</div>` : ''}
@@ -347,36 +531,20 @@
       window.location.href = `student-detail.html?id=${studentId}`;
     }
 
-    function filterByRole(role) {
-      currentFilter = role;
-      
+    function filterByRole(role, evt) {
+      activeFilters.role = role;
+
       // Update button states
       document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
+      if (evt && evt.target) evt.target.classList.add('active');
 
-      if (role === 'all') {
-        filteredStudents = allStudents;
-      } else {
-        filteredStudents = allStudents.filter(s => s.role === role);
-      }
-
+      applyFilters();
       displayStudents();
     }
 
     function searchStudents() {
-      const query = document.getElementById('searchInput').value.toLowerCase();
-
-      filteredStudents = allStudents.filter(student => {
-        return (
-          student.fullName.toLowerCase().includes(query) ||
-          student.profile?.major?.toLowerCase().includes(query) ||
-          student.profile?.country?.toLowerCase().includes(query) ||
-          student.profile?.interests?.some(i => i.toLowerCase().includes(query)) ||
-          student.profile?.hobbies?.some(h => h.toLowerCase().includes(query)) ||
-          student.profile?.languages?.some(l => l.toLowerCase().includes(query))
-        );
-      });
-
+      activeFilters.query = document.getElementById('searchInput').value;
+      applyFilters();
       displayStudents();
     }
 

@@ -35,14 +35,9 @@ async function apiCall(endpoint, method = 'GET', data = null) {
 }
 
 // Auth functions
-async function registerUser(fullName, email, password, role) {
+async function registerUser(payload) {
   try {
-    const result = await apiCall('/auth/register', 'POST', {
-      fullName,
-      email,
-      password,
-      role,
-    });
+    const result = await apiCall('/auth/register', 'POST', payload);
 
     // Save token to localStorage
     localStorage.setItem('token', result.token);
@@ -78,6 +73,19 @@ function logoutUser() {
 
 function isUserLoggedIn() {
   return localStorage.getItem('token') !== null;
+}
+
+// Password reset functions
+async function requestPasswordReset(email) {
+  return apiCall('/auth/forgot-password', 'POST', { email });
+}
+
+async function resetPassword(token, password, confirmPassword) {
+  return apiCall('/auth/reset-password', 'POST', { token, password, confirmPassword });
+}
+
+async function changePassword(currentPassword, newPassword, confirmNewPassword) {
+  return apiCall('/auth/change-password', 'POST', { currentPassword, newPassword, confirmNewPassword });
 }
 
 // Profile functions

@@ -198,15 +198,14 @@
   <header>
     <h2 class="logo">Acadia Connect</h2>
     <nav class="navigation">
-      <a href="profile.html">Home</a>
       <a href="browse-students.html">Find Students</a>
-      <a href="suggested-connections.html">Suggestions</a>
-      <a href="messages.html">Messages</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
       <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
       <a href="#" id="logoutBtn" style="display:none;">Logout</a>
-      <a href="index.html" class="btnLogin-popup" id="loginBtn">Login</a>
+      <a href="login.html" class="btnLogin-popup" id="loginBtn">Login</a>
     </nav>
   </header>
 
@@ -222,11 +221,15 @@
   <script>
     window.addEventListener('load', async () => {
       // Update navigation
+      const suggestionsLink = document.getElementById('suggestionsLink');
+      const messagesLink = document.getElementById('messagesLink');
       const profileLink = document.getElementById('profileLink');
       const loginBtn = document.getElementById('loginBtn');
       const logoutBtn = document.getElementById('logoutBtn');
 
       if (isUserLoggedIn()) {
+        if (suggestionsLink) suggestionsLink.style.display = 'block';
+        if (messagesLink) messagesLink.style.display = 'block';
         profileLink.style.display = 'block';
         loginBtn.style.display = 'none';
         logoutBtn.style.display = 'block';
@@ -269,7 +272,7 @@
                 <strong>Email:</strong> ${student.email}
               </div>
               ${student.profile?.year ? `<div class="basic-info-item"><strong>Year:</strong> ${student.profile.year}</div>` : ''}
-              ${student.profile?.major ? `<div class="basic-info-item"><strong>Major:</strong> ${student.profile.major}</div>` : ''}
+              ${student.department ? `<div class="basic-info-item"><strong>Department:</strong> ${student.department}</div>` : ''}
               ${student.profile?.country ? `<div class="basic-info-item"><strong>Country:</strong> ${student.profile.country}</div>` : ''}
             </div>
           </div>
@@ -323,32 +326,12 @@
     async function sendMessage(studentId) {
       if (!isUserLoggedIn()) {
         alert('Please login to send messages');
-        window.location.href = 'index.html';
+        window.location.href = 'login.html';
         return;
       }
 
-      const message = prompt('Enter your message:');
-      if (!message || !message.trim()) return;
-
-      try {
-        const response = await fetchWithAuth('http://localhost:3001/api/messages/send', {
-          method: 'POST',
-          body: JSON.stringify({
-            receiverId: studentId,
-            content: message.trim()
-          })
-        });
-
-        if (response.ok) {
-          alert('Message sent successfully!');
-          window.location.href = 'messages.html';
-        } else {
-          alert('Failed to send message');
-        }
-      } catch (error) {
-        console.error('Send message error:', error);
-        alert('Failed to send message');
-      }
+      if (!studentId) return;
+      window.location.href = `messages.html?userId=${encodeURIComponent(String(studentId))}`;
     }
   </script>
 </body>

@@ -1,121 +1,302 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AcadiaConnect | Login</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Acadia Connect | Home</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 
-<body class="page-auth">
+<body class="page-home">
 
   <header>
     <h2 class="logo">Acadia Connect</h2>
     <nav class="navigation">
-      <a href="profile.html">Home</a>
       <a href="browse-students.html">Find Students</a>
+      <a href="suggested-connections.html" id="suggestionsLink" style="display:none;">Suggestions</a>
+      <a href="messages.html" id="messagesLink" style="display:none;">Messages</a>
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
       <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a href="admin-dashboard.html" id="adminLink" style="display:none;">🔧 Admin</a>
+      <a href="login.html" class="btnLogin-popup" id="loginBtn">Login</a>
+      <a href="#" id="logoutBtn" style="display:none;">Logout</a>
     </nav>
   </header>
 
-  <div class="wrapper">
-    <!-- LOGIN -->
-    <div class="form-box login">
-      <h2>Login</h2>
-      <form action="#">
-        <div class="input-box">
-          <span class="icon">
-            <ion-icon name="mail"></ion-icon>
-          </span>
-          <input type="email" name="email" required>
-          <label>Email</label>
-        </div>
+  <!-- Shown when logged OUT -->
+  <main class="landing" id="landingSection">
+    <div class="landing-box">
+      <h1>Welcome to AcadiaConnect</h1>
+      <p>AcadiaConnect is a student-focused platform designed to support students at Acadia University by helping them feel more connected and supported.</p>
+      <p>Whether you are new to campus or simply looking to meet others, AcadiaConnect makes it easy to connect with peers and access helpful campus resources all in one place.</p>
+      <div class="landing-actions">
+        <a href="login.html" class="landing-btn">Login</a>
+        <a href="register.html" class="landing-link">Create an account</a>
+      </div>
+    </div>
+  </main>
 
-        <div class="input-box">
-          <input type="password" name="password" required>
-          <label>Password</label>
-        </div>
+  <!-- Shown when logged IN -->
+  <div class="greeting-banner" id="greetingBanner" style="display:none;">
+    👋 Logged in as <span id="greetingName">...</span>
+  </div>
+  <main class="profile-container" id="profileSection" style="display:none;">
+    <h1>My Profile</h1>
 
-        <div class="remember-forgot">
-          <label><input type="checkbox"> Remember me</label>
-          <a href="#">Forgot Password?</a>
+    <!-- View Mode -->
+    <div class="profile-view" id="profileView">
+      <div class="profile-section">
+        <div class="profile-photo">
+          <img id="photoPreviewView" class="photo-preview" src="https://via.placeholder.com/150" alt="Profile Photo">
         </div>
-
-        <button type="submit" class="btn">Login</button>
-
-        <div class="login-register">
-          <p>
-            Don't have an account?
-            <a href="#" class="register-link">Register</a>
-          </p>
+        <div class="profile-info">
+          <div class="info-item">
+            <span class="info-label">Full Name</span>
+            <span class="info-value" id="fullNameView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Email</span>
+            <span class="info-value" id="emailView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Role</span>
+            <span class="info-value" id="roleView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Year</span>
+            <span class="info-value" id="yearView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Department</span>
+            <span class="info-value" id="departmentView">-</span>
+          </div>
+          <div class="info-item">
+            <span class="info-label">Country</span>
+            <span class="info-value" id="countryView">-</span>
+          </div>
         </div>
-      </form>
+        <div class="info-item">
+          <span class="info-label">Languages Spoken</span>
+          <span class="info-value" id="languagesView">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Bio</span>
+          <span class="info-value" id="bioView">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Hobbies</span>
+          <span class="info-value" id="hobbiesView">-</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Interests</span>
+          <span class="info-value" id="interestsView">-</span>
+        </div>
+      </div>
+      <div class="edit-toggle">
+        <button class="btn-edit" onclick="enableEditMode()">Edit Profile</button>
+        <a class="btn-edit" href="change-password.html">Change Password</a>
+        <button class="btn-logout" id="logoutBtn2">Logout</button>
+      </div>
     </div>
 
-    <!-- REGISTER -->
-    <div class="form-box register">
-      <h2>Registration</h2>
-      <form action="#">
-        <div class="input-box">
-          <span class="icon">
-            <ion-icon name="person"></ion-icon>
-          </span>
-          <input type="text" name="fullName" required>
+    <!-- Edit Mode -->
+    <form class="edit-form" id="editForm" onsubmit="saveProfile(event)">
+      <div class="profile-section">
+        <h2>Edit Your Profile</h2>
+        <div class="profile-photo">
+          <img id="photoPreviewEdit" class="photo-preview" src="https://via.placeholder.com/150" alt="Profile Photo">
+          <div class="photo-upload">
+            <label for="photoInput">Upload Photo</label>
+            <input type="file" id="photoInput" accept="image/*" onchange="previewPhoto()">
+            <small class="helper-text">JPG, PNG (recommended: 150×150px)</small>
+          </div>
+        </div>
+        <div class="form-group">
           <label>Full Name</label>
+          <input type="text" id="fullName" required readonly class="readonly-field">
         </div>
-
-        <div class="input-box">
-          <span class="icon">
-            <ion-icon name="mail"></ion-icon>
-          </span>
-          <input type="email" name="email" required>
+        <div class="form-group">
           <label>Email</label>
+          <input type="email" id="email" required readonly class="readonly-field">
         </div>
-
-        <div class="input-box">
-          <span class="icon">
-            <ion-icon name="people"></ion-icon>
-          </span>
-          <select name="role" required>
-            <option value="" disabled selected></option>
+        <div class="form-group">
+          <label>Role</label>
+          <select id="role" disabled class="readonly-field">
+            <option value="">Select</option>
             <option value="international">International Student</option>
             <option value="local">Local Student</option>
           </select>
-          <label>Role</label>
         </div>
-
-        <div class="input-box">
-          <input type="password" name="password" required>
-          <label>Password</label>
+        <div class="profile-info">
+          <div class="form-group">
+            <label>Year of Study</label>
+            <select id="year">
+              <option value="">Select</option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+              <option value="Graduate">Graduate</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Department</label>
+            <input type="text" id="department" placeholder="e.g., Computer Science">
+          </div>
+          <div class="form-group">
+            <label>Country</label>
+            <input type="text" id="country" placeholder="e.g., Canada">
+          </div>
         </div>
-
-        <div class="remember-forgot">
-          <label>
-            <input type="checkbox">
-            I agree to the terms & conditions
-          </label>
+        <div class="form-group">
+          <label>Languages Spoken</label>
+          <input type="text" id="languages" placeholder="e.g., English, French">
+          <small class="helper-text">Separate with commas</small>
         </div>
-
-        <button type="submit" class="btn">Register</button>
-
-        <div class="login-register">
-          <p>
-            Already have an account?
-            <a href="#" class="login-link">Login</a>
-          </p>
+        <div class="form-group">
+          <label>Bio</label>
+          <textarea id="bio" placeholder="Tell others about yourself..."></textarea>
         </div>
-      </form>
-    </div>
-  </div>
+        <div class="form-group">
+          <label>Hobbies</label>
+          <input type="text" id="hobbies" placeholder="e.g., gaming, reading">
+          <small class="helper-text">Separate with commas</small>
+        </div>
+        <div class="form-group">
+          <label>Interests</label>
+          <input type="text" id="interests" placeholder="e.g., AI, music">
+          <small class="helper-text">Separate with commas</small>
+        </div>
+      </div>
+      <div class="edit-toggle">
+        <button type="submit" class="btn-save">Save Changes</button>
+        <button type="button" class="btn-cancel" onclick="disableEditMode()">Cancel</button>
+      </div>
+    </form>
+  </main>
 
   <script src="api.js"></script>
-  <script src="script.js"></script>
-  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
-  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+  <script>
+    const loggedIn = isUserLoggedIn();
+
+    // Logged-in landing should be Messages
+    if (loggedIn) {
+      window.location.replace('messages.html');
+    }
+
+    // Show the correct section immediately based on login state
+    document.getElementById('landingSection').style.display  = loggedIn ? 'none'         : 'block';
+    document.getElementById('profileSection').style.display  = loggedIn ? 'block'        : 'none';
+
+    // Update nav
+    const profileLink     = document.getElementById('profileLink');
+    const suggestionsLink = document.getElementById('suggestionsLink');
+    const messagesLink    = document.getElementById('messagesLink');
+    const adminLink       = document.getElementById('adminLink');
+    const loginBtn        = document.getElementById('loginBtn');
+    const logoutBtn       = document.getElementById('logoutBtn');
+
+    if (loggedIn) {
+      profileLink.style.display     = 'block';
+      suggestionsLink.style.display = 'block';
+      messagesLink.style.display    = 'block';
+      loginBtn.style.display        = 'none';
+      logoutBtn.style.display       = 'inline-block';
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (user.isAdmin) adminLink.style.display = 'block';
+      // Show greeting with name from localStorage immediately
+      const greetingBanner = document.getElementById('greetingBanner');
+      greetingBanner.style.display = 'flex';
+      if (user.fullName) document.getElementById('greetingName').textContent = user.fullName;
+      loadProfile();
+    }
+
+    async function loadProfile() {
+      try {
+        const profile = await getUserProfile();
+        // Update greeting with confirmed name from API
+        if (profile.fullName) document.getElementById('greetingName').textContent = profile.fullName;
+        document.getElementById('fullNameView').textContent  = profile.fullName || '-';
+        document.getElementById('emailView').textContent     = profile.email || '-';
+        document.getElementById('roleView').textContent      = profile.role === 'international' ? 'International Student' : 'Local Student';
+        document.getElementById('yearView').textContent      = profile.profile?.year || '-';
+        document.getElementById('departmentView').textContent = profile.department || '-';
+        document.getElementById('countryView').textContent   = profile.profile?.country || '-';
+        document.getElementById('languagesView').textContent = profile.profile?.languages?.join(', ') || '-';
+        document.getElementById('bioView').textContent       = profile.profile?.bio || 'No bio added yet.';
+        document.getElementById('hobbiesView').textContent   = profile.profile?.hobbies?.join(', ') || '-';
+        document.getElementById('interestsView').textContent = profile.profile?.interests?.join(', ') || '-';
+        if (profile.profile?.photo) {
+          document.getElementById('photoPreviewView').src = profile.profile.photo;
+          document.getElementById('photoPreviewEdit').src = profile.profile.photo;
+        }
+        document.getElementById('fullName').value  = profile.fullName || '';
+        document.getElementById('email').value     = profile.email || '';
+        document.getElementById('role').value      = profile.role || '';
+        document.getElementById('year').value      = profile.profile?.year || '';
+        document.getElementById('department').value = profile.department || '';
+        document.getElementById('country').value   = profile.profile?.country || '';
+        document.getElementById('languages').value = profile.profile?.languages?.join(', ') || '';
+        document.getElementById('bio').value       = profile.profile?.bio || '';
+        document.getElementById('hobbies').value   = profile.profile?.hobbies?.join(', ') || '';
+        document.getElementById('interests').value = profile.profile?.interests?.join(', ') || '';
+      } catch (err) {
+        console.error('Error loading profile:', err);
+      }
+    }
+
+    function enableEditMode() {
+      document.getElementById('profileView').classList.add('hide');
+      document.getElementById('editForm').classList.add('show');
+    }
+
+    function disableEditMode() {
+      document.getElementById('profileView').classList.remove('hide');
+      document.getElementById('editForm').classList.remove('show');
+    }
+
+    function previewPhoto() {
+      const file = document.getElementById('photoInput').files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = e => document.getElementById('photoPreviewEdit').src = e.target.result;
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function saveProfile(event) {
+      event.preventDefault();
+      try {
+        const split = id => document.getElementById(id).value.split(',').map(s => s.trim()).filter(Boolean);
+        const photoSrc = document.getElementById('photoPreviewEdit').src;
+        const profileData = {
+          bio: document.getElementById('bio').value,
+          hobbies: split('hobbies'),
+          interests: split('interests'),
+          department: document.getElementById('department').value,
+          year: document.getElementById('year').value,
+          country: document.getElementById('country').value,
+          languages: split('languages'),
+          photo: photoSrc !== 'https://via.placeholder.com/150' ? photoSrc : undefined,
+        };
+        await updateProfile(profileData);
+        alert('Profile updated successfully!');
+        await loadProfile();
+        disableEditMode();
+      } catch (err) {
+        alert('Failed to save profile: ' + err.message);
+      }
+    }
+
+    function doLogout(e) {
+      e.preventDefault();
+      logoutUser();
+      window.location.href = 'index.html';
+    }
+    document.getElementById('logoutBtn').addEventListener('click', doLogout);
+    document.getElementById('logoutBtn2').addEventListener('click', doLogout);
+  </script>
 
 </body>
 </html>

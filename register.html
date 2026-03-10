@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AcadiaConnect | Register</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body class="page-auth">
+
+  <header>
+    <h2 class="logo">Acadia Connect</h2>
+    <nav class="navigation">
+      <a href="browse-students.html">Find Students</a>
+      <a href="resources.html">Resources</a>
+      <a href="about.html">About</a>
+      <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+    </nav>
+  </header>
+
+  <div class="wrapper wrapper-register">
+    <div class="form-box register register-only">
+      <h2>Registration</h2>
+      <form id="registerForm" action="#" novalidate>
+        <!-- Step 1: Account details -->
+        <div id="registerStep1">
+          <div class="profile-photo register-photo">
+            <img id="selfiePreview" class="photo-preview" src="https://via.placeholder.com/150" alt="Selfie Preview">
+            <div class="photo-upload">
+              <label for="selfiePhoto">Upload Selfie Photo</label>
+              <input type="file" id="selfiePhoto" name="selfiePhoto" accept="image/*">
+              <small class="helper-text">JPG, PNG (max 2MB)</small>
+            </div>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="person"></ion-icon></span>
+            <input type="text" name="firstName" autocomplete="given-name" required>
+            <label>First Name</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="person"></ion-icon></span>
+            <input type="text" name="lastName" autocomplete="family-name" required>
+            <label>Last Name</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="mail"></ion-icon></span>
+            <input type="email" name="email" autocomplete="email" required>
+            <label>Email Address</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="male-female"></ion-icon></span>
+            <select name="gender" required>
+              <option value="" disabled selected></option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+            </select>
+            <label>Gender</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="people"></ion-icon></span>
+            <select name="role" required>
+              <option value="" disabled selected></option>
+              <option value="international">International Student</option>
+              <option value="local">Local Student</option>
+            </select>
+            <label>Role</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="flag"></ion-icon></span>
+            <select name="country" required>
+              <option value="Canada" selected>Canada</option>
+              <option value="United States">United States</option>
+              <option value="United Kingdom">United Kingdom</option>
+              <option value="Australia">Australia</option>
+              <option value="France">France</option>
+              <option value="Germany">Germany</option>
+              <option value="Spain">Spain</option>
+              <option value="Italy">Italy</option>
+              <option value="India">India</option>
+              <option value="China">China</option>
+              <option value="Japan">Japan</option>
+              <option value="South Korea">South Korea</option>
+              <option value="Vietnam">Vietnam</option>
+              <option value="Philippines">Philippines</option>
+              <option value="Pakistan">Pakistan</option>
+              <option value="Bangladesh">Bangladesh</option>
+              <option value="Nigeria">Nigeria</option>
+              <option value="Ghana">Ghana</option>
+              <option value="Kenya">Kenya</option>
+              <option value="South Africa">South Africa</option>
+              <option value="Egypt">Egypt</option>
+              <option value="Mexico">Mexico</option>
+              <option value="Brazil">Brazil</option>
+              <option value="Turkey">Turkey</option>
+              <option value="Saudi Arabia">Saudi Arabia</option>
+              <option value="United Arab Emirates">United Arab Emirates</option>
+            </select>
+            <label>Country</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="school"></ion-icon></span>
+            <select name="department" required>
+              <option value="" disabled selected></option>
+              <option value="Computer Science">Computer Science</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Engineering">Engineering</option>
+              <option value="Business Administration">Business Administration</option>
+              <option value="Economics">Economics</option>
+              <option value="Psychology">Psychology</option>
+              <option value="Biology">Biology</option>
+              <option value="Chemistry">Chemistry</option>
+              <option value="Physics">Physics</option>
+              <option value="Mathematics">Mathematics</option>
+              <option value="Environmental Science">Environmental Science</option>
+              <option value="Nursing">Nursing</option>
+              <option value="Education">Education</option>
+              <option value="Political Science">Political Science</option>
+              <option value="Sociology">Sociology</option>
+              <option value="History">History</option>
+              <option value="English">English</option>
+              <option value="Philosophy">Philosophy</option>
+              <option value="Fine Arts">Fine Arts</option>
+              <option value="Music">Music</option>
+              <option value="Kinesiology">Kinesiology</option>
+            </select>
+            <label>Department</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="lock-closed"></ion-icon></span>
+            <input type="password" name="password" autocomplete="new-password" minlength="6" required>
+            <label>Password</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="lock-closed"></ion-icon></span>
+            <input type="password" name="confirmPassword" autocomplete="new-password" minlength="6" required>
+            <label>Confirm Password</label>
+          </div>
+
+          <button type="button" id="registerNextBtn" class="btn">Next</button>
+        </div>
+
+        <!-- Step 2: Profile details -->
+        <div id="registerStep2" style="display:none;">
+          <div class="input-box textarea-box">
+            <span class="icon"><ion-icon name="reader"></ion-icon></span>
+            <textarea name="bio" rows="4" placeholder="Tell others about yourself..."></textarea>
+            <label>Bio (optional)</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="heart"></ion-icon></span>
+            <input type="text" name="hobbies" placeholder="e.g. reading, hiking">
+            <label>Hobbies (optional)</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="sparkles"></ion-icon></span>
+            <input type="text" name="interests" placeholder="e.g. AI, web development">
+            <label>Interests (optional)</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="calendar"></ion-icon></span>
+            <select name="year">
+              <option value="" selected></option>
+              <option value="1st Year">1st Year</option>
+              <option value="2nd Year">2nd Year</option>
+              <option value="3rd Year">3rd Year</option>
+              <option value="4th Year">4th Year</option>
+              <option value="Graduate">Graduate</option>
+            </select>
+            <label>Year (optional)</label>
+          </div>
+
+          <div class="input-box">
+            <span class="icon"><ion-icon name="chatbubbles"></ion-icon></span>
+            <input type="text" name="languages" placeholder="e.g. English, French">
+            <label>Languages (optional)</label>
+          </div>
+
+          <div style="display:flex; gap: 10px;">
+            <button type="button" id="registerBackBtn" class="btn">Back</button>
+            <button type="submit" class="btn">Register</button>
+          </div>
+        </div>
+
+        <div class="login-register">
+          <p>
+            Already have an account?
+            <a href="login.html" class="login-link">Login</a>
+          </p>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="api.js"></script>
+  <script src="script.js"></script>
+  <script type="module" src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.esm.js"></script>
+  <script nomodule src="https://unpkg.com/ionicons@5.5.2/dist/ionicons/ionicons.js"></script>
+
+</body>
+
+</html>

@@ -14,22 +14,18 @@ router.post('/send', auth, async (req, res) => {
     }
 
     // Check if receiver exists
-    const receiver = await User.findById(receiverId);
-    if (!receiver) {
+    const receiverRow = await User.findById(receiverId);
+    if (!receiverRow) {
       return res.status(404).json({ error: 'Receiver not found' });
     }
 
-    const message = new Message({
-      sender: req.user.userId,
-      receiver: receiverId,
-      content: content.trim()
+    const messageId = await Message.createMessage({
+      senderId: req.user.userId,
+      receiverId,
+      content: content.trim(),
     });
 
-    await message.save();
-
-    // Populate sender info for immediate display
-    await message.populate('sender', 'fullName photo');
-    await message.populate('receiver', 'fullName photo');
+    const message = await Message.getMessageByIdPopulated(messageId);
 
     res.status(201).json({
       message: 'Message sent successfully',
@@ -47,24 +43,19 @@ router.get('/conversations', auth, async (req, res) => {
     const userId = req.user.userId;
 
     // Find all messages where user is sender or receiver
-    const messages = await Message.find({
-      $or: [{ sender: userId }, { receiver: userId }]
-    })
-      .populate('sender', 'fullName photo')
-      .populate('receiver', 'fullName photo')
-      .sort({ createdAt: -1 });
+    const messages = await Message.getMessagesForUserPopulated(userId);
 
     // Create a map of unique conversation partners
     const conversationsMap = new Map();
 
     messages.forEach(msg => {
-      const partnerId = msg.sender._id.toString() === userId ? msg.receiver._id.toString() : msg.sender._id.toString();
+      const partnerId = msg.sender._id === userId ? msg.receiver._id : msg.sender._id;
       
       if (!conversationsMap.has(partnerId)) {
-        const partner = msg.sender._id.toString() === userId ? msg.receiver : msg.sender;
+        const partner = msg.sender._id === userId ? msg.receiver : msg.sender;
         const unreadCount = messages.filter(m => 
-          m.sender._id.toString() === partnerId && 
-          m.receiver._id.toString() === userId && 
+          m.sender._id === partnerId && 
+          m.receiver._id === userId && 
           !m.read
         ).length;
 
@@ -77,7 +68,8 @@ router.get('/conversations', auth, async (req, res) => {
       }
     });
 
-    const conversations = Array.from(conversationsMap.values());
+    const conversations = Array.from(conversationsMap.values())
+      .sort((a, b) => new Date(b.lastMessageTime) - new Date(a.lastMessageTime));
 
     res.json({ conversations });
   } catch (error) {
@@ -93,38 +85,25 @@ router.get('/conversation/:userId', auth, async (req, res) => {
     const otherUserId = req.params.userId;
 
     // Get other user info
-    const otherUser = await User.findById(otherUserId).select('-password');
-    if (!otherUser) {
+    const otherUserRow = await User.findById(otherUserId);
+    if (!otherUserRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const otherUserPublic = User.rowToPublicUser(otherUserRow);
+
     // Get all messages between these two users
-    const messages = await Message.find({
-      $or: [
-        { sender: currentUserId, receiver: otherUserId },
-        { sender: otherUserId, receiver: currentUserId }
-      ]
-    })
-      .populate('sender', 'fullName photo')
-      .populate('receiver', 'fullName photo')
-      .sort({ createdAt: 1 });
+    const messages = await Message.getConversationPopulated(currentUserId, otherUserId);
 
     // Mark messages from other user as read
-    await Message.updateMany(
-      {
-        sender: otherUserId,
-        receiver: currentUserId,
-        read: false
-      },
-      { read: true }
-    );
+    await Message.markConversationRead({ senderId: otherUserId, receiverId: currentUserId });
 
     res.json({
       otherUser: {
-        _id: otherUser._id,
-        fullName: otherUser.fullName,
-        photo: otherUser.photo,
-        role: otherUser.role
+        _id: otherUserPublic._id,
+        fullName: otherUserPublic.fullName,
+        photo: otherUserPublic.photo,
+        role: otherUserPublic.role
       },
       messages
     });
@@ -137,10 +116,7 @@ router.get('/conversation/:userId', auth, async (req, res) => {
 // Get unread message count
 router.get('/unread-count', auth, async (req, res) => {
   try {
-    const count = await Message.countDocuments({
-      receiver: req.user.userId,
-      read: false
-    });
+    const count = await Message.countUnread(req.user.userId);
 
     res.json({ unreadCount: count });
   } catch (error) {

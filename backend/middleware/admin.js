@@ -15,18 +15,18 @@ const adminAuth = async (req, res, next) => {
     }
 
     try {
-      const foundUser = await User.findById(user.userId);
+      const foundUserRow = await User.findById(user.userId);
       
-      if (!foundUser) {
+      if (!foundUserRow) {
         return res.status(404).json({ error: 'User not found' });
       }
 
-      if (!foundUser.isAdmin) {
+      if (!Boolean(foundUserRow.is_admin)) {
         return res.status(403).json({ error: 'Admin access required' });
       }
 
       req.user = user;
-      req.adminUser = foundUser;
+      req.adminUser = User.rowToPublicUser(foundUserRow);
       next();
     } catch (error) {
       console.error('Admin auth error:', error);

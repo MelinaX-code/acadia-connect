@@ -7,7 +7,8 @@ const router = express.Router();
 // Get all students (for browsing)
 router.get('/all', async (req, res) => {
   try {
-    const students = await User.find({}).select('-password');
+    const rows = await User.listAll();
+    const students = rows.map(User.rowToPublicUser);
     res.json(students);
   } catch (error) {
     console.error('Get all students error:', error);
@@ -18,11 +19,11 @@ router.get('/all', async (req, res) => {
 // Get user profile
 router.get('/me', authenticateToken, async (req, res) => {
   try {
-    const user = await User.findById(req.user.userId).select('-password');
-    if (!user) {
+    const row = await User.findById(req.user.userId);
+    if (!row) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json(user);
+    res.json(User.rowToPublicUser(row));
   } catch (error) {
     console.error('Get profile error:', error);
     res.status(500).json({ error: 'Failed to fetch profile' });
@@ -32,31 +33,22 @@ router.get('/me', authenticateToken, async (req, res) => {
 // Update user profile
 router.put('/me', authenticateToken, async (req, res) => {
   try {
-    const { bio, hobbies, interests, major, year, location, country, languages, photo } = req.body;
+    const allowedKeys = ['bio', 'hobbies', 'interests', 'department', 'year', 'country', 'languages', 'photo'];
+    const patch = {};
+    for (const key of allowedKeys) {
+      if (Object.prototype.hasOwnProperty.call(req.body, key)) {
+        patch[key] = req.body[key];
+      }
+    }
 
-    const user = await User.findByIdAndUpdate(
-      req.user.userId,
-      {
-        'profile.bio': bio,
-        'profile.hobbies': hobbies,
-        'profile.interests': interests,
-        'profile.major': major,
-        'profile.year': year,
-        'profile.location': location,
-        'profile.country': country,
-        'profile.languages': languages,
-        'profile.photo': photo,
-      },
-      { new: true }
-    ).select('-password');
-
-    if (!user) {
+    const updatedRow = await User.updateProfile(req.user.userId, patch);
+    if (!updatedRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
     res.json({
       message: 'Profile updated successfully',
-      user,
+      user: User.rowToPublicUser(updatedRow),
     });
   } catch (error) {
     console.error('Update profile error:', error);
@@ -67,13 +59,16 @@ router.put('/me', authenticateToken, async (req, res) => {
 // Get suggested connections for current user
 router.get('/suggestions/connections', authenticateToken, async (req, res) => {
   try {
-    const currentUser = await User.findById(req.user.userId).select('-password');
-    if (!currentUser) {
+    const currentUserRow = await User.findById(req.user.userId);
+    if (!currentUserRow) {
       return res.status(404).json({ error: 'User not found' });
     }
 
+    const currentUser = User.rowToPublicUser(currentUserRow);
+
     // Get all other users
-    const allUsers = await User.find({ _id: { $ne: req.user.userId } }).select('-password');
+    const otherRows = await User.listAllExcept(req.user.userId);
+    const allUsers = otherRows.map(User.rowToPublicUser);
 
     // Calculate match scores for each user
     const scoredUsers = allUsers.map(user => {
@@ -108,9 +103,9 @@ router.get('/suggestions/connections', authenticateToken, async (req, res) => {
         }
       }
 
-      // Match based on same major
-      if (currentUser.profile.major && user.profile.major && 
-          currentUser.profile.major.toLowerCase() === user.profile.major.toLowerCase()) {
+      // Match based on same department (department is the major/program)
+      if (currentUser.department && user.department && 
+          currentUser.department.toLowerCase() === user.department.toLowerCase()) {
         score += 12; // Increased from 8
         hasSharedInterests = true;
       }
@@ -147,18 +142,13 @@ router.get('/suggestions/connections', authenticateToken, async (req, res) => {
     });
 
     // Sort by score (highest first) and get top 8
-    // ONLY show users who have REAL shared interests/hobbies/major/languages
+    // ONLY show users who have REAL shared interests/hobbies/department/languages
     // Minimum score of 15 means:
     // - 1 shared interest (15 pts), OR
     // - 1 shared hobby (15 pts), OR
-    // - Same major (12 pts) + same year (5 pts), OR
+    // - Same department (12 pts) + same year (5 pts), OR
     // - 2 shared languages (8 pts each = 16 pts)
     
-    // DEBUG: Log all scores
-    console.log(`\n=== SUGGESTIONS FOR ${currentUser.fullName} ===`);
-    scoredUsers.forEach(item => {
-      console.log(`${item.user.fullName}: Score ${item.score} | hasSharedInterests: ${item.hasSharedInterests}`);
-    });
     
     const suggestions = scoredUsers
       .filter(item => item.score >= 15) // Real compatibility needed
@@ -179,11 +169,11 @@ router.get('/suggestions/connections', authenticateToken, async (req, res) => {
 // Get user profile by ID (to view other students' profiles)
 router.get('/:userId', async (req, res) => {
   try {
-    const user = await User.findById(req.params.userId).select('-password');
-    if (!user) {
+    const row = await User.findById(req.params.userId);
+    if (!row) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json(user);
+    res.json(User.rowToPublicUser(row));
   } catch (error) {
     console.error('Get user profile error:', error);
     res.status(500).json({ error: 'Failed to fetch user profile' });
