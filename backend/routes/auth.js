@@ -8,6 +8,18 @@ const authMiddleware = require('../middleware/auth');
 
 const router = express.Router();
 
+function isDuplicateEmailError(err) {
+  // MySQL: ER_DUP_ENTRY (errno 1062) for unique index violations
+  const code = err?.code;
+  const errno = err?.errno;
+  const msg = String(err?.sqlMessage || err?.message || '');
+  return (
+    code === 'ER_DUP_ENTRY' ||
+    errno === 1062 ||
+    /duplicate entry/i.test(msg)
+  ) && /email|uniq_users_email/i.test(msg);
+}
+
 function validateEmailFormat(email) {
   const value = String(email || '').trim();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -155,7 +167,10 @@ router.post('/register', async (req, res) => {
     });
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ error: 'Registration failed' });
+    if (isDuplicateEmailError(error)) {
+      return res.status(400).json({ error: 'Email already registered' });
+    }
+    return res.status(500).json({ error: 'Registration failed' });
   }
 });
 
