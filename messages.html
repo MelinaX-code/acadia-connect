@@ -526,6 +526,7 @@
       <a href="resources.html">Resources</a>
       <a href="about.html">About</a>
       <a href="profile.html" id="profileLink" style="display:none;">My Profile</a>
+      <a href="admin-dashboard.html" id="adminLink" style="display:none;">🔧 Admin</a>
       <button class="btnLogin-popup" id="logoutBtn" style="display:none;" onclick="handleLogout()">Logout</button>
     </nav>
   </header>
@@ -577,6 +578,8 @@
 
     let allStudentsCache = null;
     let conversationsPoll = null;
+    let activeChatPoll = null;
+    let activeDirectChatSignature = null;
 
     // Load conversations on page load
     window.addEventListener('load', async () => {
@@ -589,11 +592,15 @@
       const suggestionsLink = document.getElementById('suggestionsLink');
       const messagesLink = document.getElementById('messagesLink');
       const profileLink = document.getElementById('profileLink');
+      const adminLink = document.getElementById('adminLink');
       const logoutBtn = document.getElementById('logoutBtn');
       if (suggestionsLink) suggestionsLink.style.display = 'block';
       if (messagesLink) messagesLink.style.display = 'block';
       if (profileLink) profileLink.style.display = 'block';
       if (logoutBtn) logoutBtn.style.display = 'inline-block';
+
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      if (adminLink && user && user.isAdmin) adminLink.style.display = 'block';
 
       await setMode('direct');
 
@@ -609,6 +616,7 @@
       currentMode = mode === 'groups' ? 'groups' : 'direct';
       currentChatUserId = null;
       currentChatGroupId = null;
+      stopActiveChatPolling();
 
       const directBtn = document.getElementById('directModeBtn');
       const groupsBtn = document.getElementById('groupsModeBtn');
@@ -644,6 +652,67 @@
           conversationsPoll = null;
         }
         await loadGroups();
+      }
+    }
+
+    function stopActiveChatPolling() {
+      if (activeChatPoll) {
+        clearInterval(activeChatPoll);
+        activeChatPoll = null;
+      }
+      activeDirectChatSignature = null;
+    }
+
+    function startActiveChatPolling() {
+      stopActiveChatPolling();
+
+      // Poll frequently only when a direct chat is open.
+      activeChatPoll = setInterval(() => {
+        if (currentMode === 'direct' && currentChatUserId) {
+          refreshActiveDirectChat();
+        }
+      }, 2000);
+    }
+
+    function computeDirectChatSignature(messages) {
+      if (!Array.isArray(messages) || messages.length === 0) return '0';
+      const last = messages[messages.length - 1];
+      const lastAt = last && last.createdAt ? String(last.createdAt) : '';
+      return `${messages.length}:${lastAt}`;
+    }
+
+    async function refreshActiveDirectChat() {
+      if (currentMode !== 'direct' || !currentChatUserId) return;
+
+      const messagesArea = document.getElementById('messagesArea');
+      if (!messagesArea) return;
+
+      try {
+        const response = await fetchWithAuth(`http://localhost:3001/api/messages/conversation/${currentChatUserId}`);
+        const data = await response.json();
+        if (!response.ok) return;
+
+        const nextSig = computeDirectChatSignature(data.messages);
+        const atBottom = (messagesArea.scrollHeight - messagesArea.scrollTop - messagesArea.clientHeight) < 80;
+
+        if (nextSig !== activeDirectChatSignature) {
+          messagesArea.innerHTML = renderMessages(data.messages || []);
+          activeDirectChatSignature = nextSig;
+          if (atBottom) {
+            messagesArea.scrollTop = messagesArea.scrollHeight;
+          }
+        }
+
+        // Ensure we don't show NEW while the chat is open.
+        const before = (conversations || []).find(c => c?.user?._id === currentChatUserId)?.unreadCount;
+        conversations = (conversations || []).map(c =>
+          c?.user?._id === currentChatUserId ? { ...c, unreadCount: 0 } : c
+        );
+        const after = (conversations || []).find(c => c?.user?._id === currentChatUserId)?.unreadCount;
+        if (before !== after) renderConversations();
+      } catch (error) {
+        // Silent: don't disrupt the UI if polling fails.
+        console.error('Active chat refresh failed:', error);
       }
     }
 
@@ -723,9 +792,11 @@
           ? `<img src="${conv.user.photo}" alt="${conv.user.fullName}" class="conversation-photo">`
           : `<div class="conversation-photo-placeholder">${initial}</div>`;
         
-        const newHtml = conv.unreadCount > 0 ? `<div class="conversation-new-banner">NEW (${conv.unreadCount})</div>` : '';
+        const isActive = currentChatUserId === conv.user._id;
+        const showNew = conv.unreadCount > 0 && !isActive;
+        const newHtml = showNew ? `<div class="conversation-new-banner">NEW (${conv.unreadCount})</div>` : '';
         
-        const activeClass = currentChatUserId === conv.user._id ? 'active' : '';
+        const activeClass = isActive ? 'active' : '';
         
         return `
           <div class="conversation-item ${activeClass}" onclick="openChat('${conv.user._id}')">
@@ -784,6 +855,10 @@
         const data = await response.json();
         
         renderChatWindow(data.otherUser, data.messages);
+
+        // Start polling so incoming messages render immediately while chat is open.
+        activeDirectChatSignature = computeDirectChatSignature(data.messages);
+        startActiveChatPolling();
 
         // Clear NEW indicator for this conversation immediately.
         conversations = (conversations || []).map(c =>

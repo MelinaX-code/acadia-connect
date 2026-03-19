@@ -56,9 +56,13 @@ if (loginForm) {
     const password = getFormValue(loginForm, 'input[name="password"]');
 
     try {
-      await loginUser(email, password);
-      alert('Login successful!');
-      window.location.href = 'messages.html';
+      const result = await loginUser(email, password);
+      const user = (result && result.user) ? result.user : JSON.parse(localStorage.getItem('user') || '{}');
+      if (user && user.isAdmin) {
+        window.location.href = 'admin-dashboard.html';
+      } else {
+        window.location.href = 'messages.html';
+      }
     } catch (error) {
       alert('Login failed: ' + error.message);
     }

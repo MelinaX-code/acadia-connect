@@ -522,10 +522,31 @@
       if (logoutBtn) logoutBtn.style.display = 'block';
 
       try {
-        const user = JSON.parse(localStorage.getItem('user'));
-        // For now, we'll assume the first registered user is admin (you should add a proper check)
-        // In production, you'd check user.isAdmin from the backend response
-        
+        const localUser = JSON.parse(localStorage.getItem('user') || '{}');
+        let isAdmin = Boolean(localUser && localUser.isAdmin);
+
+        // Trust but verify: confirm admin status from the backend when needed.
+        if (!isAdmin) {
+          try {
+            const profile = await getUserProfile();
+            isAdmin = Boolean(profile && profile.isAdmin);
+            if (profile) {
+              // Keep localStorage in sync for navigation/redirects without breaking existing shape.
+              const mergedUser = { ...(localUser || {}), ...(profile || {}) };
+              if (mergedUser && mergedUser._id && !mergedUser.id) mergedUser.id = mergedUser._id;
+              if (mergedUser && mergedUser.id && !mergedUser._id) mergedUser._id = mergedUser.id;
+              localStorage.setItem('user', JSON.stringify(mergedUser));
+            }
+          } catch {
+            // ignore; handled below
+          }
+        }
+
+        if (!isAdmin) {
+          window.location.href = 'messages.html';
+          return;
+        }
+
         // Load dashboard data
         await loadStats();
         await loadUsers();

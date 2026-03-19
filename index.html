@@ -180,9 +180,10 @@
   <script>
     const loggedIn = isUserLoggedIn();
 
-    // Logged-in landing should be Messages
+    // Logged-in landing: Admins -> Admin Dashboard, others -> Messages
     if (loggedIn) {
-      window.location.replace('messages.html');
+      const user = JSON.parse(localStorage.getItem('user') || '{}');
+      window.location.replace(user && user.isAdmin ? 'admin-dashboard.html' : 'messages.html');
     }
 
     // Show the correct section immediately based on login state
