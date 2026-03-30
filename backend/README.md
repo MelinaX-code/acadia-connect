@@ -143,7 +143,9 @@ npm start
 
 The server will run on `http://localhost:3001` when `PORT=3001`.
 
-Note: the frontend in this repo is configured to call `http://localhost:3001/api` (see `api.js`), so using `PORT=3001` is the easiest option.
+Note: the frontend uses `api.js`.
+- When hosted over `http(s)`, it calls same-origin `/api` (recommended for VPS deployments via reverse proxy).
+- When opened via `file://`, it falls back to `http://localhost:3001/api`.
 
 ## API Endpoints
 
@@ -234,10 +236,7 @@ Authorization: Bearer <token>
 
 ## Frontend Integration
 
-Update your frontend API calls to use:
-```javascript
-const API_BASE_URL = 'http://localhost:3001/api';
-```
+Use the shared frontend helper in `acadia-connect/api.js` and reference `API_BASE_URL` from there.
 
 Example:
 ```javascript

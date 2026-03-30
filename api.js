@@ -1,5 +1,13 @@
 // API configuration
-const API_BASE_URL = 'http://localhost:3001/api';
+// - In production (served via http/https): use same-origin so it works on any IP/domain.
+// - In local dev when opening files directly (file://): fall back to localhost.
+const API_BASE_URL = (function resolveApiBaseUrl() {
+  const origin = (window.location && window.location.origin) ? String(window.location.origin) : '';
+  if (origin && origin !== 'null') {
+    return origin.replace(/\/$/, '') + '/api';
+  }
+  return 'http://localhost:3001/api';
+})();
 
 // Helper function to make API calls
 async function apiCall(endpoint, method = 'GET', data = null) {

@@ -688,7 +688,7 @@
       if (!messagesArea) return;
 
       try {
-        const response = await fetchWithAuth(`http://localhost:3001/api/messages/conversation/${currentChatUserId}`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/messages/conversation/${currentChatUserId}`);
         const data = await response.json();
         if (!response.ok) return;
 
@@ -718,7 +718,7 @@
 
     async function loadGroupsForSelector() {
       try {
-        const response = await fetchWithAuth('http://localhost:3001/api/groups');
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups`);
         if (!response.ok) return;
         const data = await response.json();
         groups = data.groups || [];
@@ -730,7 +730,7 @@
     // Load all conversations
     async function loadConversations() {
       try {
-        const response = await fetchWithAuth('http://localhost:3001/api/messages/conversations');
+        const response = await fetchWithAuth(`${API_BASE_URL}/messages/conversations`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -753,7 +753,7 @@
 
     async function loadGroups() {
       try {
-        const response = await fetchWithAuth('http://localhost:3001/api/groups');
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -851,7 +851,7 @@
       renderConversations(); // Re-render to show active state
 
       try {
-        const response = await fetchWithAuth(`http://localhost:3001/api/messages/conversation/${userId}`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/messages/conversation/${userId}`);
         const data = await response.json();
         
         renderChatWindow(data.otherUser, data.messages);
@@ -973,7 +973,7 @@
       }
 
       try {
-        const response = await fetchWithAuth(`http://localhost:3001/api/groups/${groupId}/members`, {
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/members`, {
           method: 'POST',
           body: JSON.stringify({ userId })
         });
@@ -1006,7 +1006,7 @@
       renderGroups();
 
       try {
-        const response = await fetchWithAuth(`http://localhost:3001/api/groups/${groupId}/messages`);
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups/${groupId}/messages`);
         const data = await response.json();
 
         if (!response.ok) {
@@ -1170,7 +1170,7 @@
       if (currentMode === 'direct') {
         if (!currentChatUserId) return;
         try {
-          const response = await fetchWithAuth('http://localhost:3001/api/messages/send', {
+          const response = await fetchWithAuth(`${API_BASE_URL}/messages/send`, {
             method: 'POST',
             body: JSON.stringify({
               receiverId: currentChatUserId,
@@ -1195,7 +1195,7 @@
       if (!currentChatGroupId) return;
 
       try {
-        const response = await fetchWithAuth(`http://localhost:3001/api/groups/${currentChatGroupId}/messages`, {
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups/${currentChatGroupId}/messages`, {
           method: 'POST',
           body: JSON.stringify({
             content: content
@@ -1220,7 +1220,7 @@
       if (!name) return;
 
       try {
-        const response = await fetchWithAuth('http://localhost:3001/api/groups', {
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups`, {
           method: 'POST',
           body: JSON.stringify({ name })
         });
@@ -1248,7 +1248,7 @@
       if (!name) return;
 
       try {
-        const response = await fetchWithAuth('http://localhost:3001/api/groups/join', {
+        const response = await fetchWithAuth(`${API_BASE_URL}/groups/join`, {
           method: 'POST',
           body: JSON.stringify({ name })
         });

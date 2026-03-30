@@ -255,7 +255,7 @@
 
     async function loadStudentDetail(studentId) {
       try {
-        const response = await fetch(`http://localhost:3001/api/profile/${studentId}`);
+        const response = await fetch(`${API_BASE_URL}/profile/${studentId}`);
         if (!response.ok) throw new Error('Student not found');
 
         const student = await response.json();

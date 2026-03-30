@@ -17,7 +17,7 @@ This repository contains:
 The backend reads/writes data in **MariaDB/MySQL**.
 
 ```
-Browser (HTML/CSS/JS)  →  http://localhost:3001/api  →  Express server  →  MariaDB/MySQL
+Browser (HTML/CSS/JS)  →  /api (same origin)  →  Express server  →  MariaDB/MySQL
 ```
 
 ### What “logging in” means here
@@ -61,8 +61,11 @@ Seeded test login:
 
 ### 2) Start the backend API
 
-The frontend is configured to call `http://localhost:3001/api`.
-So make sure the backend runs on port **3001**.
+The frontend uses `api.js` to pick the API base automatically:
+- If opened from a real site (`http://` or `https://`) it calls **same-origin** `/api`.
+- If opened directly from disk (`file://`) it falls back to `http://localhost:3001/api`.
+
+For easiest local dev, run the backend on port **3001**.
 
 From `acadia-connect/backend`:
 ```bash
@@ -274,8 +277,8 @@ Backend (`backend/`):
 ## Troubleshooting
 
 **Frontend can’t reach the API**
-- Check the backend is running on `http://localhost:3001`.
-- The frontend uses `api.js` with `API_BASE_URL = 'http://localhost:3001/api'`.
+- If you opened the HTML via `file://`, run the backend on `http://localhost:3001`.
+- If you’re hosting the frontend (even on a VPS IP), make sure your web server proxies `/api` to the Node backend.
 
 **Password reset email doesn’t arrive**
 - Configure SMTP in `backend/.env`.
